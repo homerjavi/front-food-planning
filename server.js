@@ -21,8 +21,8 @@ app.get('/', function (req, res) {
 app.listen(port_number);
 console.log( 'Express serving on ' + port_number ) */
 
-app.listen(process.env.PORT, '0.0.0.0')
+/* app.listen(process.env.PORT, '0.0.0.0') */
 
-/* app.listen(5000, function () {
+app.listen(5000, function () {
   console.log( 'Express serving on 5000!' )
-}) */
+})
