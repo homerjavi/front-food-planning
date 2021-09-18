@@ -18,8 +18,10 @@ app.get('/', function (req, res) {
 })
 
 //var port_number = server.listen(process.env.PORT || 3000);
-app.listen(3000);
-console.log( 'Express serving on ' + 3000 )
+/* app.listen(3000);
+console.log( 'Express serving on ' + 3000 ) */
+
+app.listen(process.env.PORT || 5000)
 
 /* app.listen(process.env.PORT, '0.0.0.0') */
 /* 
