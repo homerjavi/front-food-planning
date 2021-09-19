@@ -23,17 +23,10 @@ export default defineComponent({
   components: {
 	  TreeViewMeals, Planning
   },
-  setup () {
-  }, 
   data() {
 	  return {
 		  currentItem: {},
 	  }
-  },
-  created() {
-	  console.log(process.env.API);
-  },
-  methods: {
   },
 })
 </script>
