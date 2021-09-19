@@ -35,7 +35,7 @@
 						<q-select v-model="editedItem.category" :options="categories" label="Categoría" option-label="name" option-value="id"/>
 					</q-card-section>
 					<q-card-section class="q-pt-none">
-						<q-input dense type="textarea" label="Descripción" v-model="editedItem.desciption" />
+						<q-input dense type="textarea" label="Descripción" v-model="editedItem.description" />
 					</q-card-section>
 					<q-card-section class="q-pt-none">
 						<q-input dense type="number" label="Calorías" v-model="editedItem.kalories" />
@@ -129,7 +129,7 @@ export default {
 		getMeals(){
 			this.loadingState = true;
 			api
-				.get( process.env.API_BASE_URL + 'meals' )
+				.get( process.env.API + 'meals' )
 				.then(response => {
 					this.meals = response.data;
 
@@ -141,7 +141,7 @@ export default {
 		getCategories(){
 			this.loadingState = true;
 			api
-				.get( process.env.API_BASE_URL + 'categories' )
+				.get( process.env.API + 'categories' )
 				.then(response => {
 					this.categories = response.data.categories;
 				});
@@ -162,7 +162,7 @@ export default {
 
 		async updateItemDB( id ){
 			await api
-				.patch( process.env.API_BASE_URL + 'meals/' + id )
+				.patch( process.env.API + 'meals/' + id )
 				.then( response => {
 
 				})
@@ -173,7 +173,7 @@ export default {
 
 		async newItemDB(){
 			await api
-				.post( process.env.API_BASE_URL + 'meals/', this.editedItem )
+				.post( process.env.API + 'meals/', this.editedItem )
 				.then( response => {
 					this.editedItem.id = response.data.meal.id;
 				})
@@ -184,7 +184,7 @@ export default {
 
 		async deleteItemDB( id ){
 			await api
-				.delete( process.env.API_BASE_URL + 'meals/' + id )
+				.delete( process.env.API + 'meals/' + id )
 				.then( response => {
 
 				})

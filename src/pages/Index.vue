@@ -31,8 +31,7 @@ export default defineComponent({
 	  }
   },
   created() {
-	  console.log(process.env.API_BASE_URL);
-	  console.log(api.baseURL);
+	  console.log(process.env.API);
   },
   methods: {
   },
