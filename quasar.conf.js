@@ -53,8 +53,8 @@ module.exports = configure(function (ctx) {
         API_BASE_URL: 'https://food-planning-back.herokuapp.com/api/',
         //API_BASE_URL: 'http://localhost:8000/api/',
         API: ctx.dev
-          ? 'https://dev.api.com'
-          : 'https://prod.api.com'
+          ? 'https://food-planning-back.herokuapp.com/api/'
+          : 'http://localhost:8000/api/'
       },
       // transpile: false,
 
