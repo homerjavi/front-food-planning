@@ -50,7 +50,7 @@ module.exports = configure(function (ctx) {
       vueRouterMode: 'history', // available values: 'hash', 'history'
 
       env: {
-        API_BASE_URL: 'https://front-food-planning.herokuapp.com/api/',
+        API_BASE_URL: 'https://food-planning-back.herokuapp.com/api/',
         //API_BASE_URL: 'http://localhost:8000/api/',
         API: ctx.dev
           ? 'https://dev.api.com'
