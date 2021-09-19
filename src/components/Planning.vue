@@ -145,7 +145,7 @@ export default {
 	},
 
 	async deleteMealDB( id ) {
-		console.log( 'URL: ' + process.env.API + 'planning/' + id );
+		console.log( 'URL: ' + process.env.APIL + 'planning/' + id );
 
 		await api
 			.delete( process.env.API + 'planning/' + id )
