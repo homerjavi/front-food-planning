@@ -103,7 +103,7 @@ export default {
 		async getCategories(){
 			this.loadingState = true;
 			await api
-				.get( process.env.API_BASE_URL + 'categories' )
+				.get( process.env.API + 'categories' )
 				.then(response => {
 					this.categories = response.data.categories;
 				});
@@ -125,7 +125,7 @@ export default {
 
 		async updateItemDB( id ){
 			await api
-				.patch( process.env.API_BASE_URL + 'categories/' + id )
+				.patch( process.env.API + 'categories/' + id )
 				.then( response => {
 
 				})
@@ -136,7 +136,7 @@ export default {
 
 		async newItemDB(){
 			await api
-				.post( process.env.API_BASE_URL + 'categories/', this.editedItem )
+				.post( process.env.API + 'categories/', this.editedItem )
 				.then( response => {
 					this.editedItem.id = response.data.category.id;
 				})
@@ -147,7 +147,7 @@ export default {
 
 		async deleteItemDB( id ){
 			await api
-				.delete( process.env.API_BASE_URL + 'categories/' + id )
+				.delete( process.env.API + 'categories/' + id )
 				.then( response => {
 
 				})

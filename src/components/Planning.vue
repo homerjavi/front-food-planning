@@ -90,7 +90,7 @@ export default {
   methods: {
 	getPlanningDB() {
 		api
-			.get( process.env.API_BASE_URL + 'planning' )
+			.get( process.env.API + 'planning' )
 			.then(response => {
 				this.planning = response.data.planning;
 			});
@@ -131,7 +131,7 @@ export default {
 
 	async saveMealDB( item ) {
 		await api
-				.post(process.env.API_BASE_URL + 'planning', this.lastItemMoved)
+				.post(process.env.API + 'planning', this.lastItemMoved)
 				.then( (response) => {
 					let savedPlanning   = response.data.planning;
 					let targetPlanning  = this.planning[ savedPlanning.day_of_week ][ savedPlanning.hour ][ savedPlanning.order - 1 ];
@@ -145,10 +145,10 @@ export default {
 	},
 
 	async deleteMealDB( id ) {
-		console.log( 'URL: ' + process.env.API_BASE_URL + 'planning/' + id );
+		console.log( 'URL: ' + process.env.API + 'planning/' + id );
 
 		await api
-			.delete( process.env.API_BASE_URL + 'planning/' + id )
+			.delete( process.env.API + 'planning/' + id )
 			.then( response => {
 
 			})
@@ -186,7 +186,7 @@ export default {
 
 	async deleteAllPlanning() {
 		await api
-				.delete( process.env.API_BASE_URL + 'delete-all-planning' )
+				.delete( process.env.API + 'delete-all-planning' )
 				.then( response => {
 					this.planning = response.data.planning;
 				})
