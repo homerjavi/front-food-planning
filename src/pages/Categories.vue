@@ -98,8 +98,6 @@ export default {
 	},
 	mounted() {
 		this.getCategories();
-		console.log('process.env.ctx.dev', process.env.ctx.dev);
-		console.log('process.env.API', process.env.API);
 	},
 	methods: {
 		async getCategories(){
