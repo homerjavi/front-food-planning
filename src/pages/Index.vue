@@ -1,6 +1,5 @@
 <template>
   <q-page class="q-pa-md">
-	  <h1>{{ process.env.API_BASE_URL }}</h1>
 	<div class="q-px-md q-py-lg q-gutter-sm">
 		<div class="row">
 			<div class="col-3">
@@ -30,6 +29,9 @@ export default defineComponent({
 	  return {
 		  currentItem: {},
 	  }
+  },
+  created() {
+	  console.log(process.env.API_BASE_URL);
   },
   methods: {
   },
