@@ -135,8 +135,13 @@ export default {
 		},
 
 		async newItemDB(){
+			let headers = {
+				'Access-Control-Allow-Origin': '*',
+				'Content-Type': 'application/json',
+				};
+
 			await api
-				.post( process.env.API + 'categories/', this.editedItem )
+				.post( process.env.API + 'categories/', this.editedItem, headers )
 				.then( response => {
 					this.editedItem.id = response.data.category.id;
 				})
