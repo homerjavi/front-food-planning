@@ -103,7 +103,7 @@ export default {
 		async getCategories(){
 			this.loadingState = true;
 			await api
-				.get( 'http://localhost:8000/api/categories' )
+				.get( process.env.API_BASE_URL + 'categories' )
 				.then(response => {
 					this.categories = response.data.categories;
 				});

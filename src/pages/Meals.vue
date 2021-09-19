@@ -129,7 +129,7 @@ export default {
 		getMeals(){
 			this.loadingState = true;
 			api
-				.get( 'http://localhost:8000/api/meals' )
+				.get( process.env.API_BASE_URL + 'meals' )
 				.then(response => {
 					this.meals = response.data;
 
@@ -141,7 +141,7 @@ export default {
 		getCategories(){
 			this.loadingState = true;
 			api
-				.get( 'http://localhost:8000/api/categories' )
+				.get( process.env.API_BASE_URL + 'categories' )
 				.then(response => {
 					this.categories = response.data.categories;
 				});
