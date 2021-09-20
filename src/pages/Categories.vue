@@ -140,7 +140,7 @@ export default {
 			};
 
 			await api
-				.post( process.env.API + 'categories/', this.editedItem, headers )
+				.post( process.env.API + 'categories', this.editedItem, headers )
 				.then( response => {
 					this.editedItem.id = response.data.category.id;
 				})
