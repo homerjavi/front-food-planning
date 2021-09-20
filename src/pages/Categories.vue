@@ -138,7 +138,7 @@ export default {
 			let headers = {
 				'Access-Control-Allow-Origin': '*',
 				'Content-Type': 'application/json',
-				};
+			};
 
 			await api
 				.post( process.env.API + 'categories/', this.editedItem, headers )
