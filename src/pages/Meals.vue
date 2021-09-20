@@ -173,7 +173,7 @@ export default {
 
 		async newItemDB(){
 			await api
-				.post( process.env.API + 'meals/', this.editedItem )
+				.post( process.env.API + 'meals', this.editedItem )
 				.then( response => {
 					this.editedItem.id = response.data.meal.id;
 				})

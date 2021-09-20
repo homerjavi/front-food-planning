@@ -105,7 +105,7 @@ export default {
 
 	getCategoriesDB(){
 		api
-			.get( process.env.API_BASE_URL + 'categories' )
+			.get( process.env.API + 'categories' )
 			.then(response => {
 				this.categories = response.data.categories;
 			});
