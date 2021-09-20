@@ -8,7 +8,7 @@ const
 const app = express()
 app.use(cors())
 app.use(history())
-//app.use(serveStatic(__dirname + '/dist/spa'))
+app.use(serveStatic(__dirname + '/dist/spa'))
 
 app.get('/categoriest', function (req, res, next) {
   res.json({msg: 'This is CORS-enabled for all origins!'})
