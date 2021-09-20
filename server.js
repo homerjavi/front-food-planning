@@ -1,6 +1,6 @@
 const
   express = require('express'),
-  var cors = require('cors')
+  cors = require('cors')
   serveStatic = require('serve-static'),
   history = require('connect-history-api-fallback'),
   port = process.env.PORT || 5000
