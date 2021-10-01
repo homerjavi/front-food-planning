@@ -40,7 +40,11 @@
 				  :group="{ name: 'people', pull: 'clone', put: false }"
 				>
 				  <template #item="{ element }">
-					  <span class="handle">{{ element.node.name }}</span>
+						<span 
+							class="handle"
+						>
+						  {{ element.node.name }}
+						</span>
 				  </template>
 				</draggable>
 			  </template>
@@ -62,7 +66,6 @@ export default {
   components: {
 	draggable
   },
-  props: ['currentItem'],
   setup () {
 	const filter = ref('');
 	const filterRef = ref(null);
@@ -82,11 +85,13 @@ export default {
 	  return {
 		  categories: [],
 		  collapseOpen: "Cerrar todos",
+		  //leftDrawerOpen_: true,
 	  }
   },
 
   created() {
 	console.log("Creado TreViewMeals");
+	//this.leftDrawerOpen_= this.leftDrawerOpen;
   },
 
   mounted() {
@@ -130,7 +135,14 @@ export default {
 	
 	startDragging( item ){
 	  console.log( 'Start dragging Tree', item );
-	  this.$emit('update:currentItem', item);
+	//console.log( 'this.$parent.leftDrawerOpen', this.leftDrawerOpen_ );
+	  //this.leftDrawerOpen_ = false;
+		//console.log( 'this.$parent.leftDrawerOpen', this.leftDrawerOpen_ );
+
+		//this.$emit('updateParent', this.$parent.leftDrawerOpen)
+	  //this.$emit('update:currentItem', item);
+	  this.$parent.currentItem = item;
+	  console.log( 'Fin de Start dragging Tree', this.$parent.currentItem );
 	},
 
 	endDragging(){
@@ -139,6 +151,13 @@ export default {
 
 	addDragging(){
 	  console.log( 'Add dragging Tree' );
+	},
+
+	mousedown (){
+		console.log("mousedown");
+	},
+	mouseup (){
+		console.log("mouseup");
 	},
 
   },

@@ -4,8 +4,8 @@
 	  <button @click="deleteAllPlanning">Delete All Planning</button>
     <h4 class="text-center q-ma-none">Planning</h4>
 	<div class="q-py-md"></div>
-	<div class="row justify-around">
-		<q-card class="my-card" v-for="(day, dayOfWeek) in planning" :key="`day-${dayOfWeek}`">
+	<div class="row">
+		<q-card class="col-xs-5 my-card" v-for="(day, dayOfWeek) in planning" :key="`day-${dayOfWeek}`">
 			<div color="primary" class="full-width text-white text-center text-h5 q-pa-sm bg-primary">
 				{{ day.name }}
 			</div>
@@ -33,8 +33,8 @@
 					:item-key="`${day.name}-lunch`"
 					group="people"
 					@add="handleAddMeal(day['dinner'], dayOfWeek, 'dinner')"
-					@start="startDragging(item)"
-					@end="endDragging(item)"
+					@start="startDragging()"
+					@end="endDragging()"
 					@change="changeDragging"
 					>
 					<template #item="{ element }">
@@ -51,43 +51,51 @@
 import { ref } from "vue";
 import { api } from 'boot/axios';
 import draggable from 'vuedraggable';
+// import Drawer from 'components/Drawer';
 
 export default {
   name: 'Planning',
 
   components: {
-	  draggable
+	  draggable, /* Drawer */
   },
 
-  props: [ 'currentItem' ],
+  //props: [ 'currentItem' ],
 
   setup () {
 	let planning = ref({});
+	//const leftDrawerOpen = ref(true)
 
-    return {
+	return {
 		planning,
 	}
   },
 
   data() {
 	  return {
+		  leftDrawerOpen: false,
 		  planning_: {},
 		  dra: [],
-		  lastItemMoved: {},
+		  item: this.$parent.currentItem,
+		  /* this.$parent.currentItem: {}, */
 	  }
   },
 
-  watch: {
+ /*  watch: {
 	currentItem: function () {
-      this.lastItemMoved = {...this.currentItem};
+      this.$parent.currentItem = {...this.currentItem};
 	},
   },
-
+ */
   mounted() {
 	this.getPlanningDB();
   },
 
   methods: {
+	toggleLeftDrawer () {
+		console.log(this.leftDrawerOpen);
+		this.leftDrawerOpen = !this.leftDrawerOpen;
+	},
 	getPlanningDB() {
 		api
 			.get( process.env.API + 'planning' )
@@ -115,23 +123,23 @@ export default {
 			return;
 		}
 
-		this.lastItemMoved = this.isMovedFromPlanning(e) ? {...e.added.element} : {...e.added.element.node};
-		this.lastItemMoved.order = e.added.newIndex + 1;
+		this.$parent.currentItem = this.isMovedFromPlanning(e) ? {...e.added.element} : {...e.added.element.node};
+		this.$parent.currentItem.order = e.added.newIndex + 1;
 	},
 
 	handleAddMeal(target, dayOfWeek, hour) {
 		console.log( 'HandleAddMeal dragging Planning', arguments );
 		console.log( 'HandleAddMeal dragging Planning Target', target );
-		this.lastItemMoved.day_of_week = dayOfWeek;
-		this.lastItemMoved.hour      = hour;
+		this.$parent.currentItem.day_of_week = dayOfWeek;
+		this.$parent.currentItem.hour      = hour;
 		
-		target[this.lastItemMoved.order-1] = {...this.lastItemMoved};
+		target[this.$parent.currentItem.order-1] = {...this.$parent.currentItem};
 		this.saveMealDB();
 	},
 
 	async saveMealDB( item ) {
 		await api
-				.post(process.env.API + 'planning', this.lastItemMoved)
+				.post(process.env.API + 'planning', this.$parent.currentItem)
 				.then( (response) => {
 					let savedPlanning   = response.data.planning;
 					let targetPlanning  = this.planning[ savedPlanning.day_of_week ][ savedPlanning.hour ][ savedPlanning.order - 1 ];
@@ -145,8 +153,6 @@ export default {
 	},
 
 	async deleteMealDB( id ) {
-		console.log( 'URL: ' + process.env.APIL + 'planning/' + id );
-
 		await api
 			.delete( process.env.API + 'planning/' + id )
 			.then( response => {
