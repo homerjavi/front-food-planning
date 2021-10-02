@@ -67,15 +67,15 @@ export default {
 	draggable
   },
   setup () {
-	const filter = ref('');
-	const filterRef = ref(null);
+	/* const filter = ref('');
+	const filterRef = ref(null); */
 	const expandedKeys = ref([]);
 	const isExpanded = ref(true);
 	const dragging = ref(false);
 
 	return {
-	  filter,
-	  filterRef,
+	  /* filter,
+	  filterRef, */
 	  expandedKeys,
 	  isExpanded,
 	  dragging,
@@ -85,26 +85,26 @@ export default {
 	  return {
 		  categories: [],
 		  collapseOpen: "Cerrar todos",
-		  //leftDrawerOpen_: true,
+		  filter: '',
+		  //filterRef: null,
 	  }
   },
 
   created() {
 	console.log("Creado TreViewMeals");
-	//this.leftDrawerOpen_= this.leftDrawerOpen;
   },
 
   mounted() {
 	  this.getCategoriesDB();
   },
 
-  watch: {
+  /* watch: {
 	  filter: function(){
 		  if ( this.filter.length > 0 ) {
 			  this.$refs.tree.expandAll();
 		  }
 	  }
-  },
+  }, */
 
   methods: {
 
@@ -128,8 +128,8 @@ export default {
 	},
 
 	resetFilter () {
-		filter.value = ''
-		filterRef.value.focus()
+		this.filter = '';
+		this.$refs.filterRef.focus();
 	},
 
 	

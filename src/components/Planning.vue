@@ -1,9 +1,8 @@
 <template>
   <div>
+    <h4 class="text-center q-ma-none">Planning</h4>
 	  <button @click="seeAllPlanningInConsole">See All Planning</button>
 	  <button @click="deleteAllPlanning">Delete All Planning</button>
-    <h4 class="text-center q-ma-none">Planning</h4>
-	<div class="q-py-md"></div>
 	<div class="row">
 		<q-card class="col-xs-5 my-card" v-for="(day, dayOfWeek) in planning" :key="`day-${dayOfWeek}`">
 			<div color="primary" class="full-width text-white text-center text-h5 q-pa-sm bg-primary">
@@ -207,7 +206,6 @@ export default {
 <style lang="scss" scoped>
 	.my-card{
 		width: 100%;
-		max-width: 250px;
 		margin: 0.5rem 0;
 	}
 
