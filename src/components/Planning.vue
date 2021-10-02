@@ -166,7 +166,7 @@ export default {
 		console.log('removeMealPlanningDB');
 		this.$q.loading.show();
 
-		await api
+		/* await api
 			.delete( process.env.API + 'planning/' + id )
 			.then( response => {
 				if( response.status == 200 && index){
@@ -175,7 +175,7 @@ export default {
 			})
 			.catch(error => {
 				console.error(error);
-			});
+			}); */
 		this.$q.loading.hide();
 	},
 
