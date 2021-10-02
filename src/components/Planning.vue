@@ -163,6 +163,7 @@ export default {
 	},
 
 	async removeMealPlanningDB( id, source = null, index = null ) {
+		console.log('removeMealPlanningDB');
 		this.$q.loading.show();
 
 		await api
