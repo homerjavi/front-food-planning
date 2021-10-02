@@ -18,8 +18,8 @@
 					@add="handleAddMeal(day['lunch'], dayOfWeek, 'lunch')"
 					@change="changeDragging">
 					<template #item="{ element, index }">
-						<div>
-							<q-chip class="handle" removable @remove="removeMealPlanningDB( element.id, day['lunch'], index )" color="primary" text-color="white" icon="cake">
+						<div class="q-mb-sm">
+							<q-chip class="handle" size="1rem" removable @remove="removeMealPlanningDB( element.id, day['lunch'], index )" color="primary" text-color="white" icon="cake">
         						{{ element.name }}
       						</q-chip>
 					 	</div>
@@ -125,7 +125,7 @@ export default {
 			this.planning[element.day_of_week][element.hour] = this.planning[element.day_of_week][element.hour].splice(e.removed.oldIndex, 1);
 			
 			if (element.id) {
-				this.deleteMealDB( element.id );
+				this.removeMealPlanningDB( element.id );
 			}
 
 			return;
@@ -162,13 +162,13 @@ export default {
 		this.$q.loading.hide();
 	},
 
-	async removeMealPlanningDB( id, source, index ) {
+	async removeMealPlanningDB( id, source = null, index = null ) {
 		this.$q.loading.show();
 
 		await api
 			.delete( process.env.API + 'planning/' + id )
 			.then( response => {
-				if( response.status == 200 ){
+				if( response.status == 200 && index){
 					source.splice( index, 1 );
 				} 
 			})
