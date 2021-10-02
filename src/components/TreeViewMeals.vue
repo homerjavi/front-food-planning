@@ -17,7 +17,8 @@
 
 	<div class="row q-mt-md">
 	  <div class="col-12">
-		<q-tree ref="tree"
+		<q-tree 
+		  ref="tree"
 		  :nodes="categories"
 		  node-key="name"
 		  label-key="name"
@@ -39,12 +40,17 @@
 				  @end="endDragging"
 				  :group="{ name: 'people', pull: 'clone', put: false }"
 				>
+				  <!-- <template v-if="currentlyDragging" #item="{ element }">
+						<q-chip class="handle" color="primary" text-color="white" icon="cake">
+							{{ element.node.name }}
+						</q-chip>
+				  </template> -->
 				  <template #item="{ element }">
-						<span 
-							class="handle"
-						>
-						  {{ element.node.name }}
-						</span>
+					  	<div>
+							<q-chip class="handle" color="primary" text-color="white">
+								{{ element.node.name }}
+							</q-chip>
+						</div>
 				  </template>
 				</draggable>
 			  </template>
@@ -84,9 +90,10 @@ export default {
   data() {
 	  return {
 		  categories: [],
-		  collapseOpen: "Cerrar todos",
+		  collapseOpen: "Abrir todos",
 		  filter: '',
 		  //filterRef: null,
+		  currentlyDragging: false,
 	  }
   },
 
@@ -96,6 +103,7 @@ export default {
 
   mounted() {
 	  this.getCategoriesDB();
+	  this.$refs.tree.collapseAll();
   },
 
   /* watch: {
@@ -143,10 +151,12 @@ export default {
 	  //this.$emit('update:currentItem', item);
 	  this.$parent.currentItem = item;
 	  console.log( 'Fin de Start dragging Tree', this.$parent.currentItem );
+	  this.currentlyDragging = true;
 	},
 
 	endDragging(){
 	  console.log( 'End dragging Tree' );
+	  this.currentlyDragging = false;
 	},
 
 	addDragging(){

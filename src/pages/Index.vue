@@ -11,7 +11,8 @@
 		>
 			<tree-view-meals 
 				@updateParent="toggleLeftDrawer" 
-				v-touch-hold.mouse="mousedown"
+				@touchstart="touchstart"
+				@mousedown="mousedown"
 				@mouseup="mouseup"
 			/>
 		</q-drawer>	
@@ -55,16 +56,29 @@ export default defineComponent({
 	  toggleLeftDrawer () {
 			this.leftDrawerOpen = !this.leftDrawerOpen;
 		},
-	  mousedown (){
+	  touchstart (){
+		  console.log("Touch start");
 		  this.lastEventMouse = "mousedown";
-		  if( this.lastEventMouse == "mousedown" ) {
-				this.leftDrawerOpen = false;
-			}
+		  this.checkLastMouseEvent();
+	  },
+	  mousedown (){
+		  console.log("Mouse down");
+		  this.lastEventMouse = "mousedown";
+		  this.checkLastMouseEvent();
 	  },
 	  mouseup (){
 		  console.log("Mouse up");
 		  this.lastEventMouse = "mouseup";
 	  },
+	  checkLastMouseEvent(){
+		  console.log("checklastMouse");
+		  window.setTimeout(() => {
+			  console.log("checklastMouse");
+			if( this.lastEventMouse == "mousedown" ) {
+				this.leftDrawerOpen = false;
+			}	  
+		  }, 1000);
+	  }
   },	
 })
 </script>

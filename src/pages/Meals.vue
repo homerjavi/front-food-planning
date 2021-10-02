@@ -9,6 +9,7 @@
 					row-key="name"
 					:filter="filter"
 					:loading="loadingState"
+					:rows-per-page-options="[0]"
 				>
 					<template v-slot:top>
 						<q-btn color="primary" :disable="loadingState" label="Añadir plato" @click="prompt = true" />

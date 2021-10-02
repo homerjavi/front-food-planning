@@ -17,9 +17,9 @@
 					group="people"
 					@add="handleAddMeal(day['lunch'], dayOfWeek, 'lunch')"
 					@change="changeDragging">
-					<template #item="{ element }">
+					<template #item="{ element, index }">
 						<div>
-							<q-chip class="handle" removable color="primary" text-color="white" icon="cake">
+							<q-chip class="handle" removable @remove="removeMealPlanningDB( element.id, day['lunch'], index )" color="primary" text-color="white" icon="cake">
         						{{ element.name }}
       						</q-chip>
 					 	</div>
@@ -31,16 +31,16 @@
 			<q-card-section>
 				<draggable
 					:list="day['dinner']"
-					:item-key="`${day.name}-lunch`"
+					:item-key="`${day.name}-dinner`"
 					group="people"
 					@add="handleAddMeal(day['dinner'], dayOfWeek, 'dinner')"
 					@start="startDragging()"
 					@end="endDragging()"
 					@change="changeDragging"
 					>
-					<template #item="{ element }">
+					<template #item="{ element, index }">
 						<div>
-							<q-chip class="handle" removable color="primary" text-color="white" icon="cake">
+							<q-chip class="handle" removable @remove="removeMealPlanningDB( element.id, day['dinner'], index )" color="primary" text-color="white" icon="cake">
         						{{ element.name }}
       						</q-chip>
 					 	</div>
@@ -53,6 +53,7 @@
 </template>
 
 <script>
+import { useQuasar } from 'quasar'
 import { ref } from "vue";
 import { api } from 'boot/axios';
 import draggable from 'vuedraggable';
@@ -68,6 +69,7 @@ export default {
   //props: [ 'currentItem' ],
 
   setup () {
+	// const $q     = useQuasar();
 	let planning = ref({});
 	//const leftDrawerOpen = ref(true)
 
@@ -83,6 +85,7 @@ export default {
 		  dra: [],
 		  item: this.$parent.currentItem,
 		  /* this.$parent.currentItem: {}, */
+		  $q: useQuasar(),
 	  }
   },
 
@@ -143,6 +146,7 @@ export default {
 	},
 
 	async saveMealDB( item ) {
+		this.$q.loading.show();
 		await api
 				.post(process.env.API + 'planning', this.$parent.currentItem)
 				.then( (response) => {
@@ -155,26 +159,32 @@ export default {
 				.catch(error => {
 					console.log(error);
 				});
+		this.$q.loading.hide();
 	},
 
-	async deleteMealDB( id ) {
+	async removeMealPlanningDB( id, source, index ) {
+		this.$q.loading.show();
+
 		await api
 			.delete( process.env.API + 'planning/' + id )
 			.then( response => {
-
+				if( response.status == 200 ){
+					source.splice( index, 1 );
+				} 
 			})
 			.catch(error => {
 				console.error(error);
 			});
+		this.$q.loading.hide();
 	},
 
-	deleteDuplicateItems(target) {
+	/* deleteDuplicateItems(target) {
 		target.forEach( (element, index) => {
 			if (element.hasOwnProperty('node') ) {
 				target.splice(index, 1);
 			}
 		});
-	},
+	}, */
 
 	
 	endDragging(e){
@@ -235,5 +245,5 @@ export default {
 	.handle:hover{
 		cursor: move;
 	}
-	
+
 </style>
