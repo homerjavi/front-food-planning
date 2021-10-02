@@ -29,7 +29,7 @@
 		  <template v-slot:default-header="prop">
 			<div>
 			  <template v-if="(typeof prop.node.category_id) === 'undefined'">
-				<span>{{ prop.node.name }}</span>
+				<span class="text-weight-bold" color="primary">{{ prop.node.name }}</span>
 			  </template>
 			  <template v-else>
 				<draggable

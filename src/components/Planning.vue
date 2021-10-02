@@ -18,9 +18,11 @@
 					@add="handleAddMeal(day['lunch'], dayOfWeek, 'lunch')"
 					@change="changeDragging">
 					<template #item="{ element }">
-						<div class="handle">
-							{{ element.name }}
-						</div>
+						<div>
+							<q-chip class="handle" removable color="primary" text-color="white" icon="cake">
+        						{{ element.name }}
+      						</q-chip>
+					 	</div>
 					</template>
 				</draggable> 
 			</q-card-section>
@@ -37,7 +39,11 @@
 					@change="changeDragging"
 					>
 					<template #item="{ element }">
-						<div class="handle">{{ element.name }}</div>
+						<div>
+							<q-chip class="handle" removable color="primary" text-color="white" icon="cake">
+        						{{ element.name }}
+      						</q-chip>
+					 	</div>
 					</template>
 				</draggable> 
 			</q-card-section>
@@ -229,4 +235,5 @@ export default {
 	.handle:hover{
 		cursor: move;
 	}
+	
 </style>
