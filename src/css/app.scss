@@ -82,7 +82,8 @@
     }
 
     .q-expansion-item__content{
-        height: 200px;
+        max-height: 200px;
+        margin-bottom: 20px;
         display: flex;
         flex-direction: column;
         flex-wrap: wrap;
