@@ -48,7 +48,7 @@
 							>
 							<!-- <div class="row items-center justify-between"> -->
 								<span
-									class="text-weight-bold text-h6"
+									class="text-weight-medium text-h6"
 									color="primary"
 									>{{ prop.node.name }}</span
 								>

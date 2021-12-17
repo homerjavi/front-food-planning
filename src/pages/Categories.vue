@@ -33,7 +33,12 @@
 						<div class="text-h6">Nueva categoría</div>
 					</q-card-section>
 					<q-card-section class="q-pt-none">
-						<q-input dense v-model="editedItem.name" label="Nombre" autofocus />
+						<q-input 
+							ref="editedItemName"
+							dense
+							v-model="editedItem.name"
+							label="Nombre"
+							autofocus />
 					</q-card-section>
 					<q-card-section class="q-pt-none">
 						<q-select v-model="editedItem.icon" :options="icons" option-label="name" option-value="id" clearable label="Selecciona icono">
@@ -121,6 +126,8 @@ export default {
 		let filter = ref("");
 		let prompt = ref(false);
 		let dialogConfirm = ref(false);
+		let editedItemName = ref("");
+		let editedItemIcon = ref("");
 
 		let editedItem = ref({
 			id: "",
