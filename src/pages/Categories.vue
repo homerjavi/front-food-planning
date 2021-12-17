@@ -161,7 +161,7 @@ export default {
 
 		const editItem = (item = null, index = null) => {
 			editedItem.value = item ? { ...item } : { defaultItem };
-			editedIndex = index ? index : -1;
+			editedIndex = index ?? -1;
 			prompt.value = true;
 		};
 
