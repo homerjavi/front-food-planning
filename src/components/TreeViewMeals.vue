@@ -4,7 +4,7 @@
 		<div class="q-py-md"></div>
 		<div class="row no-wrap items-end">
 			<div class="col-8">
-				<!-- <q-input ref="filterRef" v-model="filter" label="Filter">
+				<q-input ref="filterRef" v-model="filter" label="Filter">
 					<template v-slot:append>
 						<q-icon
 							v-if="filter !== ''"
@@ -13,17 +13,17 @@
 							@click="resetFilter"
 						/>
 					</template>
-				</q-input> -->
+				</q-input>
 			</div>
 			<div class="col-4 q-ml-sm">
-				<!-- <q-btn
+				<q-btn
 					class="btnCollapseOpen"
 					push
 					dense
 					color="primary"
 					:label="collapseOpen"
 					@click="toogleTree"
-				/> -->
+				/>
 			</div>
 		</div>
 
@@ -124,7 +124,7 @@ export default {
 			});
 		};
 
-		/* 	const toogleTree = () => {
+			const toogleTree = () => {
 			if (this.$refs.tree.getExpandedNodes().length > 0) {
 				this.$refs.tree.collapseAll();
 				this.collapseOpen = `Abrir\ntodos`;
@@ -137,7 +137,7 @@ export default {
 		const resetFilter = () => {
 			this.filter = "";
 			this.$refs.filterRef.focus();
-		}; */
+		};
 
 		/* const startDragging = (item) => {
 			console.log("Start dragging Tree", item);
@@ -177,9 +177,9 @@ export default {
 			isExpanded,
 			dragging,
 			filter,
-			// resetFilter,
+			resetFilter,
 			collapseOpen,
-			// toogleTree,
+			toogleTree,
 			categories,
 			// startDragging,
 			// endDragging,

@@ -22,19 +22,6 @@
 			</q-expansion-item>
 		</div>
 
-		<!-- <q-toggle v-model="showResume" />Ver resumen
-		<q-slide-transition style="height: 100px !important">
-			<div v-show="showResume" class="column justify-between q-px-xl">
-				<div class="col-md-auto q-mr-lg" v-for="category in categories" :key="category.id">
-					<div class="row items-center">
-						<q-icon class="meal-category-icons q-mr-sm" :name="category.icon.path ? 'img:' + category.icon.path : ''" />
-						<span :class="category.optimum_number != category.assigned ? 'text-red-6' : 'text-blue-6'"
-							>{{ category.name }}: {{ category.assigned ?? 0 }} / {{ category.optimum_number }}</span
-						>
-					</div>
-				</div>
-			</div>
-		</q-slide-transition> -->
 		<div class="row justify-evenly">
 			<div class="col-12 col-sm-5 col-lg-3 col-xl-auto planning-card q-pt-md q-px-md" v-for="(day, dayOfWeek) in planning" :key="`day-${dayOfWeek}`">
 				<div class="row text-black text-left text-h4">
@@ -45,6 +32,7 @@
 						class="text-h6 text-left meal-hours-tittle"
 						style="font: size 1.35rem"
 						:style="mealHourIndex > 0 ? 'margin-top: -20px;' : 'margin-top: 10px;'"
+						@click="seeAllPlanningInConsole"
 					>
 						{{ mealHour.name }}
 					</div>
@@ -58,7 +46,7 @@
 							@change="changeDragging"
 						>
 							<template #item="{ element }">
-								<div class="row items-center handle justify-between q-my-sm">
+								<div class="row items-center handle justify-between q-my-sm" @click="removeMealPlanningDB(element)">
 									<q-icon class="meal-category-icons" :name="element.icon_path ? 'img:' + element.icon_path : ''" />
 									<span class="col-8 q-pl-sm">{{ element.name ?? element.node.name }}</span>
 									<q-icon class="meal-remove-icons" name="clear" @click="removeMealPlanningDB(element)" />
@@ -224,7 +212,7 @@ export default {
 
 		const seeAllPlanningInConsole = () => {
 			console.log("All Planning", planning.value);
-			console.log("1-0", planning.value[2]["hours"][1]["meals"]);
+			// console.log("1-0", planning.value[2]["hours"][1]["meals"]);
 		};
 
 		const deleteAllPlanning = async () => {
