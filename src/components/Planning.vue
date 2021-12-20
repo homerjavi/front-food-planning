@@ -44,13 +44,12 @@
 							class="q-pb-xl"
 							@add="addDragging(dayOfWeek, mealHour.id, mealHourIndex)"
 							@change="changeDragging"
-							@click="seeAllPlanningInConsole('draggable')"
 						>
 							<template #item="{ element }">
-								<div class="row items-center handle justify-between q-my-sm" @click="seeAllPlanningInConsole('div draggable')">
+								<div class="row items-center handle justify-between q-my-sm">
 									<q-icon class="meal-category-icons" :name="element.icon_path ? 'img:' + element.icon_path : ''" />
 									<span class="col-8 q-pl-sm">{{ element.name ?? element.node.name }}</span>
-									<q-icon class="meal-remove-icons" name="clear" @click="removeMealPlanningDB(element)" @mousedown.stop.prevent="seeAllPlanningInConsole('mouse Down')" @touchstart.stop.prevent="seeAllPlanningInConsole('touch start')"/>
+									<q-icon class="meal-remove-icons" name="clear" @mousedown.stop.prevent="removeMealPlanningDB(element)" @touchstart.stop.prevent="removeMealPlanningDB(element)"/>
 								</div>
 							</template>
 						</draggable>
