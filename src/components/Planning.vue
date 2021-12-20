@@ -49,7 +49,7 @@
 								<div class="row items-center handle justify-between q-my-sm">
 									<q-icon class="meal-category-icons" :name="element.icon_path ? 'img:' + element.icon_path : ''" />
 									<span class="col-8 q-pl-sm">{{ element.name ?? element.node.name }}</span>
-									<q-icon class="meal-remove-icons" name="clear" @mouseup.stop.prevent="removeMealPlanningDB(element)" @touchend.stop.prevent="removeMealPlanningDB(element)"/>
+									<q-icon class="meal-remove-icons" name="clear" @mouseup.stop.prevent="removeMealPlanningDB(element, mealHourIndex)" @touchend.stop.prevent="removeMealPlanningDB(element, mealHourIndex)"/>
 								</div>
 							</template>
 						</draggable>
