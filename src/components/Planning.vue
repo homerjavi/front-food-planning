@@ -32,7 +32,7 @@
 						class="text-h6 text-left meal-hours-tittle"
 						style="font: size 1.35rem"
 						:style="mealHourIndex > 0 ? 'margin-top: -20px;' : 'margin-top: 10px;'"
-						@click="seeAllPlanningInConsole"
+						@click="seeAllPlanningInConsole('mealHour')"
 					>
 						{{ mealHour.name }}
 					</div>
@@ -44,9 +44,10 @@
 							class="q-pb-xl"
 							@add="addDragging(dayOfWeek, mealHour.id, mealHourIndex)"
 							@change="changeDragging"
+							@click="seeAllPlanningInConsole('draggable')"
 						>
 							<template #item="{ element }">
-								<div class="row items-center handle justify-between q-my-sm" @click="removeMealPlanningDB(element)">
+								<div class="row items-center handle justify-between q-my-sm" @click="seeAllPlanningInConsole('div draggable')">
 									<q-icon class="meal-category-icons" :name="element.icon_path ? 'img:' + element.icon_path : ''" />
 									<span class="col-8 q-pl-sm">{{ element.name ?? element.node.name }}</span>
 									<q-icon class="meal-remove-icons" name="clear" @click="removeMealPlanningDB(element)" />
@@ -210,7 +211,8 @@ export default {
 			return e.hasOwnProperty("moved");
 		};
 
-		const seeAllPlanningInConsole = () => {
+		const seeAllPlanningInConsole = (element = '') => {
+			alert("click en " + element);
 			console.log("All Planning", planning.value);
 			// console.log("1-0", planning.value[2]["hours"][1]["meals"]);
 		};
