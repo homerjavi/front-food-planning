@@ -191,6 +191,7 @@ export default {
 		};
 
 		const removeMealPlanningDB = async (item, indexHour = null) => {
+			console.log("Click remove");
 			$q.loading.show();
 
 			if (indexHour === null) {
