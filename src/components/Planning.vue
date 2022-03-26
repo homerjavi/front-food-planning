@@ -2,8 +2,13 @@
 	<div>
 		<h3 class="text-center q-mt-none q-mb-md">Planning</h3>
 		<!-- <button @click="showResume = !showResume">Ver resumen</button> -->
-		<div class="q-pa-md">
-			<q-toggle v-model="showResume" label="Ver resumen" />
+		<div class="row q-pa-md justify-between">
+			<q-toggle class="col" v-model="showResume" label="Ver resumen" />
+			<q-btn-group push class="col" style="max-width: 400px;">
+				<q-btn class="col q-pa-none" push icon="west" @click="getPlanningDB(-1)"/>
+				<q-btn class="col q-pa-none" push label="Hoy" icon="today" @click="getPlanningDB()" />
+				<q-btn class="col q-pa-none" push icon="east" @click="getPlanningDB(1)"/>
+			</q-btn-group>
 		</div>
 		<div>
 			<q-expansion-item 
@@ -24,8 +29,9 @@
 
 		<div class="row justify-evenly">
 			<div class="col-12 col-sm-5 col-lg-3 col-xl-auto planning-card q-pt-md q-px-md" v-for="(day, dayOfWeek) in planning" :key="`day-${dayOfWeek}`">
-				<div class="row text-black text-left text-h4">
-					{{ day.name }}
+				<div class="row items-baseline justify-between">
+					<span class="col text-black text-left text-h4">{{ day.name }}</span>
+					<span class="col text-right">{{ day.date }}</span>
 				</div>
 				<div v-for="(mealHour, mealHourIndex) in day.hours" :key="`div-mealHourId-${mealHour.id}`" class="q-ml-xs">
 					<div
@@ -79,20 +85,28 @@ export default {
 		let categories = ref([]);
 		let showResume = ref(false);
 		let currentItem = {};
+		let weekDiff = ref(0);
 		const $q = useQuasar();
 
 		onBeforeMount(() => {
 			getPlanningDB();
 		});
 
-		const getPlanningDB = async () => {
-			await api.get(process.env.API + "planning").then((response) => {
+		const getPlanningDB = async ( numWeekToSum = 0 ) => {
+			if ( !numWeekToSum && !weekDiff.value && Object.keys(planning.value).length ) {
+				return;
+			}
+			
+			$q.loading.show();
+			weekDiff.value = numWeekToSum ? weekDiff.value + numWeekToSum : 0;
+			await api.post(process.env.API + "planning", {'weekDiff': weekDiff.value}).then((response) => {
 				planning.value = response.data.planning;
 				mealTypes.value = response.data.mealTypes;
 				mealHours.value = response.data.mealHours;
 				categories.value = response.data.categories;
 				getNumAssignedCategory();
 			});
+			$q.loading.hide();
 		};
 
 		const getNumAssignedCategory = () => {
@@ -133,6 +147,7 @@ export default {
 			console.log("addDragging dragging Planning...", dayOfWeek, hourId, hourIndex);
 			currentItem.day_of_week = dayOfWeek;
 			currentItem.meal_hour_id = hourId;
+			currentItem.date = planning.value[dayOfWeek].date;
 
 			saveMealDB(hourIndex);
 		};
@@ -140,7 +155,7 @@ export default {
 		const saveMealDB = async (hourIndex) => {
 			$q.loading.show();
 			await api
-				.post(process.env.API + "planning", currentItem)
+				.post(process.env.API + "planningStore", currentItem)
 				.then((response) => {
 					planning.value[currentItem.day_of_week]["hours"][hourIndex]["meals"] = response.data;
 					addOrSubtractToCategory(currentItem);
@@ -199,6 +214,25 @@ export default {
 			$q.loading.hide();
 		};
 
+		const previousWeek = () => {
+			$q.loading.show();
+
+
+
+
+
+			 api
+				.post(process.env.API + "getplanning", currentItem)
+				.then((response) => {
+					planning.value[currentItem.day_of_week]["hours"][hourIndex]["meals"] = response.data;
+					addOrSubtractToCategory(currentItem);
+				})
+				.catch((error) => {
+					console.log(error);
+				});
+			$q.loading.hide();
+		};
+
 		const isMovedFromPlanning = (e) => {
 			return !e.added.element.hasOwnProperty("key");
 		};
@@ -241,6 +275,8 @@ export default {
 			addDragging,
 			changeDragging,
 			removeMealPlanningDB,
+			weekDiff,
+			getPlanningDB,
 		};
 	},
 };
