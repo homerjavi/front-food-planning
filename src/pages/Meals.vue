@@ -182,7 +182,6 @@ export default {
 			await api
 				.patch(process.env.API + "meals/" + editedItem.value.id, editedItem.value)
 				.then((response) => {
-					debugger;
 					meals.value[editedIndex] = response.data;
 				})
 				.catch((error) => {
