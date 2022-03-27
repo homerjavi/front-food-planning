@@ -55,6 +55,18 @@
 								<div class="row items-center handle justify-between q-my-sm">
 									<q-icon class="meal-category-icons" :name="element.icon_path ? 'img:' + element.icon_path : ''" />
 									<span class="col-8 q-pl-sm">{{ element.name ?? element.node.name }}</span>
+									<q-avatar :style="`cursor:pointer; width:0.7em; height:0.7em; background-color:${element.color}; border: 1px solid #d4d4d4;`">
+										<q-menu>
+											<q-list style="min-width: 100px">
+												<q-item clickable v-close-popup v-for="mealType in mealTypes" :key="`div-mealTypeId-${mealType.id}`" class="items-center">
+													<q-item-section avatar style="min-width: initial">
+														<q-avatar :style="`width:0.7em; height:0.7em; background-color:${mealType.color}; border: 1px solid #d4d4d4;`"></q-avatar>
+													</q-item-section>
+													<q-item-section @click="updateMealType( element, dayOfWeek, mealHourIndex, mealType )">{{ mealType.name }}</q-item-section>
+												</q-item>
+											</q-list>
+										</q-menu>
+									</q-avatar>
 									<q-icon class="meal-remove-icons" name="clear" @mouseup.stop.prevent="removeMealPlanningDB(element, mealHourIndex)" @touchend.stop.prevent="removeMealPlanningDB(element, mealHourIndex)"/>
 								</div>
 							</template>
@@ -80,8 +92,8 @@ export default {
 
 	setup() {
 		let planning = ref({});
-		let mealTypes = ref({});
-		let mealHours = ref({});
+		let mealTypes = ref([]);
+		let mealHours = ref([]);
 		let categories = ref([]);
 		let showResume = ref(false);
 		let currentItem = {};
@@ -264,6 +276,25 @@ export default {
 				});
 		};
 
+		const updateMealType = async ( currentItem, dayOfWeek, hourIndex, mealType ) => {
+			currentItem.meal_type_id = mealType.id;
+			currentItem.color = mealType.color;
+			let index = planning.value[dayOfWeek]["hours"][hourIndex]["meals"].indexOf( currentItem );
+
+			await api
+				.post(process.env.API + "updateMealType", currentItem)
+				.then((response) => {
+					planning.value[dayOfWeek]["hours"][hourIndex]["meals"][ index ] = currentItem;
+				})
+				.catch((error) => {
+					console.error(error);
+				}); 
+		};
+
+		const saluda = () => {
+			alert("Hola");
+		}
+
 		return {
 			planning,
 			mealTypes,
@@ -277,6 +308,8 @@ export default {
 			removeMealPlanningDB,
 			weekDiff,
 			getPlanningDB,
+			updateMealType,
+			saluda
 		};
 	},
 };
