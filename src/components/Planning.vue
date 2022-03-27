@@ -55,6 +55,7 @@
 							class="q-pb-xl"
 							@add="addDragging(dayOfWeek, mealHour.id, mealHourIndex)"
 							@change="changeDragging"
+							:options="{delay:2000}"
 						>
 							<template #item="{ element }">
 								<div class="row items-center handle justify-between q-my-sm">
