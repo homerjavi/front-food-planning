@@ -40,7 +40,12 @@
 						:style="mealHourIndex > 0 ? 'margin-top: -20px;' : 'margin-top: 10px;'"
 						@click="seeAllPlanningInConsole('mealHour')"
 					>
-						{{ mealHour.name }}
+						<span>{{ mealHour.name }}</span>
+						<q-icon class="q-ml-md" name="add_circle_outline">
+							<q-tooltip>
+								Añadir plato (en este día y hora)
+							</q-tooltip>
+						</q-icon>
 					</div>
 					<div class="q-ml-xs q-mt-xs">
 						<draggable
@@ -53,21 +58,32 @@
 						>
 							<template #item="{ element }">
 								<div class="row items-center handle justify-between q-my-sm">
-									<q-icon class="meal-category-icons" :name="element.icon_path ? 'img:' + element.icon_path : ''" />
+									<q-icon class="meal-category-icons" :name="element.icon_path ? 'img:' + element.icon_path : ''">
+										<q-tooltip>
+											{{ element.category_name || 'Sin categoría' }}
+										</q-tooltip>
+									</q-icon>
 									<span class="col-8 q-pl-sm">{{ element.name ?? element.node.name }}</span>
-									<q-avatar :style="`cursor:pointer; width:0.7em; height:0.7em; background-color:${element.color}; border: 1px solid #d4d4d4;`">
+									<q-avatar :style="`cursor:pointer; width:0.5em; height:0.5em; background-color:${element.meal_type_color}; border: 1px solid #d4d4d4;`">
+										<q-tooltip>
+											{{ element.meal_type_name || 'Sin tipo' }}
+										</q-tooltip>
 										<q-menu>
 											<q-list style="min-width: 100px">
-												<q-item clickable v-close-popup v-for="mealType in mealTypes" :key="`div-mealTypeId-${mealType.id}`" class="items-center">
+												<q-item clickable @click="updateMealType( element, dayOfWeek, mealHourIndex, mealType )" v-close-popup v-for="mealType in mealTypes" :key="`div-mealTypeId-${mealType.id}`" class="items-center">
 													<q-item-section avatar style="min-width: initial">
 														<q-avatar :style="`width:0.7em; height:0.7em; background-color:${mealType.color}; border: 1px solid #d4d4d4;`"></q-avatar>
 													</q-item-section>
-													<q-item-section @click="updateMealType( element, dayOfWeek, mealHourIndex, mealType )">{{ mealType.name }}</q-item-section>
+													<q-item-section>{{ mealType.name }}</q-item-section>
 												</q-item>
 											</q-list>
 										</q-menu>
 									</q-avatar>
-									<q-icon class="meal-remove-icons" name="clear" @mouseup.stop.prevent="removeMealPlanningDB(element, mealHourIndex)" @touchend.stop.prevent="removeMealPlanningDB(element, mealHourIndex)"/>
+									<q-icon class="meal-remove-icons" name="clear" @click="removeMealPlanningDB(element, mealHourIndex)" @touchend.stop.prevent="removeMealPlanningDB(element, mealHourIndex)">
+										<q-tooltip>
+											Eliminar
+										</q-tooltip>
+									</q-icon>
 								</div>
 							</template>
 						</draggable>
@@ -277,8 +293,8 @@ export default {
 		};
 
 		const updateMealType = async ( currentItem, dayOfWeek, hourIndex, mealType ) => {
-			currentItem.meal_type_id = mealType.id;
-			currentItem.color = mealType.color;
+			currentItem.meal_type_id    = mealType.id;
+			currentItem.meal_type_color = mealType.color;
 			let index = planning.value[dayOfWeek]["hours"][hourIndex]["meals"].indexOf( currentItem );
 
 			await api
