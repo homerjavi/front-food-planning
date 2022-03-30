@@ -38,6 +38,9 @@
 							<q-td key="name" :props="props">
 								{{ props.row.name }}
 							</q-td>
+							<q-td key="general" :props="props">
+								<q-icon v-if="props.row.general" name="done"></q-icon>
+							</q-td>
 							<q-td key="color" :props="props">
 								<div
 									:style="`border-radius:50%; margin:0 auto; height:20px; width:20px; background-color:${props.row.color};`"
@@ -80,21 +83,26 @@
 							]"
 						/>
 					</q-card-section>
-					<q-card-section class="q-pt-none flex">
-						<label>Color</label>
-						<div
-							:style="`border: 1px solid black; border-radius:50%; margin-left: 8px; height:20px; width:20px; background-color:${editedItem.color};`"
-						>
-							<q-popup-proxy
-								cover
-								transition-show="scale"
-								transition-hide="scale"
+					<q-card-section class="q-pt-none flex justify-between items-center">
+						<div class="flex">
+							<label>Color</label>
+							<div
+								:style="`border: 1px solid black; border-radius:50%; margin-left: 8px; height:20px; width:20px; background-color:${editedItem.color};`"
 							>
-								<q-color
-									v-model="editedItem.color"
-									default-view="palette"
-								/>
-							</q-popup-proxy>
+								<q-popup-proxy
+									cover
+									transition-show="scale"
+									transition-hide="scale"
+								>
+									<q-color
+										v-model="editedItem.color"
+										default-view="palette"
+									/>
+								</q-popup-proxy>
+							</div>
+						</div>
+						<div>
+							<q-checkbox left-label v-model="editedItem.general" label="¿General?" :value="editedItem.general" />
 						</div>
 					</q-card-section>
 					<q-card-section class="q-pt-none">
@@ -157,6 +165,13 @@ const columns = [
 		sortable: true,
 	},
 	{
+		name: "general",
+		label: "General",
+		align: "center",
+		field: "general",
+		sortable: false,
+	},
+	{
 		name: "color",
 		align: "center",
 		label: "Color",
@@ -187,6 +202,7 @@ export default {
 		let editedItem = ref({
 			id: "",
 			name: "",
+			general: false,
 			color: "#FFFFFF",
 			order: "",
 		});
@@ -194,6 +210,7 @@ export default {
 		let defaultItem = {
 			id: "",
 			name: "",
+			general: false,
 			color: "#FFFFFF",
 			order: "",
 		};

@@ -4,7 +4,7 @@
 		<div class="q-py-md"></div>
 		<div class="row no-wrap items-end">
 			<div class="col-8">
-				<q-input ref="filterRef" v-model="filter" label="Filter">
+				<q-input ref="filterRef" v-model="filter" label="Filter" @keyup="openOrCloseTree">
 					<template v-slot:append>
 						<q-icon
 							v-if="filter !== ''"
@@ -41,19 +41,9 @@
 				>
 					<template v-slot:default-header="prop">
 						<div class="row items-center justify-between full-width">
-							<template
-								v-if="
-									typeof prop.node.category_id === 'undefined'
-								"
-							>
-							<!-- <div class="row items-center justify-between"> -->
-								<span
-									class="text-weight-medium text-h6"
-									color="primary"
-									>{{ prop.node.name }}</span
-								>
-								<q-icon class="col-2" :name="prop.node.icon.path ? 'img:' + prop.node.icon.path : ''" />
-							<!-- </div> -->
+							<template v-if="typeof prop.node.category_id === 'undefined'">
+								<span class="text-weight-medium text-h6" color="primary">{{ prop.node.name }}</span>
+								<q-icon class="col-2 q-py-sm" :name="prop.node.icon.path ? 'img:' + prop.node.icon.path : ''" />
 							</template>
 							<template v-else>
 								<draggable
@@ -73,14 +63,6 @@
 												"
 											>
 												{{ element.node.name }}
-											
-											<!-- <q-chip
-												class="handle"
-												color="primary"
-												text-color="white"
-											>
-												{{ element.node.name }}
-											</q-chip> -->
 										</div>
 									</template>
 								</draggable>
@@ -111,11 +93,12 @@ export default {
 		const categories = ref([]);
 		const collapseOpen = ref("Abrir todos");
 		const filter = ref("");
+		const filterRef = ref(null);
 		const currentlyDragging = false;
+		const tree = ref(null);
 
 		onBeforeMount(() => {
 			getCategoriesDB();
-			//this.$refs.tree.collapseAll();
 		});
 
 		const getCategoriesDB = async () => {
@@ -124,19 +107,29 @@ export default {
 			});
 		};
 
-			const toogleTree = () => {
-			if (this.$refs.tree.getExpandedNodes().length > 0) {
-				this.$refs.tree.collapseAll();
-				this.collapseOpen = `Abrir\ntodos`;
+		const toogleTree = () => {
+			if (tree.value.getExpandedNodes().length > 0) {
+				tree.value.collapseAll();
+				collapseOpen.value = `Abrir\ntodos`;
 			} else {
-				this.$refs.tree.expandAll();
-				this.collapseOpen = "Cerrar\ntodos";
+				tree.value.expandAll();
+				collapseOpen.value = "Cerrar\ntodos";
+			}
+		};
+
+		const openOrCloseTree = () => {
+			if ( filter.value == '' ) {
+				tree.value.collapseAll();
+				collapseOpen.value = `Abrir\ntodos`;
+			} else {
+				tree.value.expandAll();
+				collapseOpen.value = "Cerrar\ntodos";
 			}
 		};
 
 		const resetFilter = () => {
-			this.filter = "";
-			this.$refs.filterRef.focus();
+			filter.value = "";
+			filterRef.value.focus();
 		};
 
 		/* const startDragging = (item) => {
@@ -177,10 +170,13 @@ export default {
 			isExpanded,
 			dragging,
 			filter,
+			filterRef,
 			resetFilter,
 			collapseOpen,
 			toogleTree,
 			categories,
+			tree,
+			openOrCloseTree,
 			// startDragging,
 			// endDragging,
 		};
