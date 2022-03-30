@@ -41,7 +41,13 @@
 							autofocus />
 					</q-card-section>
 					<q-card-section class="q-pt-none">
-						<q-select v-model="editedItem.icon" :options="icons" option-label="name" option-value="id" clearable label="Selecciona icono">
+						<q-select v-model="editedItem.icon" :options="icons" option-label="name" option-value="id" label="Selecciona icono">
+							<template v-slot:selected>
+								<div class="items-center">
+									<q-icon class="q-mr-md" :name="editedItem.icon ? 'img:' + editedItem.icon.path : ''" />
+									<span>{{ editedItem.icon ? editedItem.icon.name : '' }}</span> 
+								</div>
+							</template>
 							<template v-slot:option="scope">
 								<q-item v-bind="scope.itemProps">
 									<q-item-section avatar>
@@ -249,3 +255,10 @@ export default {
 	},
 };
 </script>
+
+<style lang="scss">
+	.q-field__control-container .q-field__native{
+		padding-bottom: 0;
+	}
+	
+</style>

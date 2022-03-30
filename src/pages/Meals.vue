@@ -31,7 +31,18 @@
 						<q-input dense v-model="editedItem.name" label="Nombre" autofocus />
 					</q-card-section>
 					<q-card-section class="q-pt-none">
-						<q-select v-model="editedItem.category" :options="categories" label="Categoría" option-label="name" option-value="id" />
+						<q-select v-model="editedItem.category" :options="categories" label="Categoría" option-label="name" option-value="id">
+							<template v-slot:option="scope">
+								<q-item v-bind="scope.itemProps">
+									<q-item-section avatar>
+										<q-icon :name="scope.opt.icon.path ? 'img:' + scope.opt.icon.path : ''" />
+									</q-item-section>
+									<q-item-section>
+										<q-item-label>{{ scope.opt.name }}</q-item-label>
+									</q-item-section>
+								</q-item>
+							</template>
+						</q-select>
 					</q-card-section>
 					<q-card-section class="q-pt-none">
 						<q-input dense type="textarea" label="Descripción" v-model="editedItem.description" />
