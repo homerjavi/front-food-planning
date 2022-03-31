@@ -109,28 +109,36 @@ export default {
 
 		const toogleTree = () => {
 			if (tree.value.getExpandedNodes().length > 0) {
-				tree.value.collapseAll();
-				collapseOpen.value = `Abrir\ntodos`;
+				setCollapseAllTree();
 			} else {
-				tree.value.expandAll();
-				collapseOpen.value = "Cerrar\ntodos";
+				setExpandedAllTree();
 			}
 		};
 
 		const openOrCloseTree = () => {
 			if ( filter.value == '' ) {
-				tree.value.collapseAll();
-				collapseOpen.value = `Abrir\ntodos`;
+				setCollapseAllTree();
 			} else {
-				tree.value.expandAll();
-				collapseOpen.value = "Cerrar\ntodos";
+				setExpandedAllTree();
 			}
 		};
 
 		const resetFilter = () => {
+			debugger
+			setCollapseAllTree();
 			filter.value = "";
 			filterRef.value.focus();
 		};
+
+		const setCollapseAllTree = () => {
+			tree.value.collapseAll();
+			collapseOpen.value = `Abrir\ntodos`;
+		}
+
+		const setExpandedAllTree = () => {
+			tree.value.expandAll();
+			collapseOpen.value = "Cerrar\ntodos";
+		}
 
 		/* const startDragging = (item) => {
 			console.log("Start dragging Tree", item);

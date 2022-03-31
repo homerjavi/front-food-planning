@@ -1,8 +1,7 @@
 <template>
-	<div>
-		<h3 class="text-center q-mt-none q-mb-md">Planning</h3>
-		<!-- <button @click="showResume = !showResume">Ver resumen</button> -->
-		<div class="row q-pa-md justify-between">
+	<div q-pa-md>
+		<h3 @click="saluda" class="text-center q-mt-none q-mb-md">Planning</h3>
+		<div class="row justify-between">
 			<q-toggle class="col" v-model="showResume" label="Ver resumen" />
 			<q-btn-group push class="col" style="max-width: 400px;">
 				<q-btn class="col q-pa-none" push icon="west" @click="getPlanningDB(-1)"/>
@@ -16,12 +15,15 @@
 				v-model="showResume"
 				dense
 				dense-toggle>
+				<div>
+					<div></div>
+				</div>
 				<div v-for="category in categories" :key="category.id">
 					<div class="">
 						<q-icon class="meal-category-icons q-mr-sm" :name="category.icon.path ? 'img:' + category.icon.path : ''" />
-						<span :class="category.optimum_number != category.assigned ? 'text-red-6' : 'text-blue-6'"
-							>{{ category.name }}: {{ category.assigned ?? 0 }} / {{ category.optimum_number }}</span
-						>
+						<span :class="category.optimum_number != category.assigned ? 'text-red-6' : 'text-blue-6'">
+							{{ category.name }}: {{ category.assigned ?? 0 }} / {{ category.optimum_number }}
+						</span>
 					</div>
 				</div>
 			</q-expansion-item>
@@ -245,12 +247,7 @@ export default {
 
 		const previousWeek = () => {
 			$q.loading.show();
-
-
-
-
-
-			 api
+			api
 				.post(process.env.API + "getplanning", currentItem)
 				.then((response) => {
 					planning.value[currentItem.day_of_week]["hours"][hourIndex]["meals"] = response.data;
@@ -309,7 +306,26 @@ export default {
 		};
 
 		const saluda = () => {
-			alert("Hola");
+			let meals = [];
+			console.log('----');
+			for (const day of Object.values(planning.value)) {
+				console.log(day);	
+			}
+
+			console.log('----');
+
+			Object.values(planning.value).forEach( day => {
+				console.log(day);
+				day.hours.forEach( hour => {
+					hour.meals.forEach( meal => {
+						meals.push( meal );
+					} )
+				} );
+
+			} )
+
+			console.log('----');
+			console.log(meals);
 		}
 
 		return {
@@ -333,12 +349,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.my-card {
-	// width: 100%;
-	// margin: 0.5rem 0;
-	// gap: 10px;
-}
-
 .subtitle {
 	font-size: 1rem;
 	font-weight: 600;
