@@ -124,7 +124,6 @@ export default {
 		};
 
 		const resetFilter = () => {
-			debugger
 			setCollapseAllTree();
 			filter.value = "";
 			filterRef.value.focus();
