@@ -52,6 +52,7 @@
 					<div class="q-ml-xs q-mt-xs">
 						<draggable
 							:list="mealHour.meals"
+							handle=".handle"
 							:item-key="`mealHourId-${mealHour.id}`"
 							group="meals"
 							class="q-pb-xl"
@@ -60,18 +61,18 @@
 							:options="{delay:2000}"
 						>
 							<template #item="{ element }">
-								<div class="row items-center handle justify-between q-my-sm">
-									<q-icon class="meal-category-icons" :name="element.icon_path ? 'img:' + element.icon_path : ''">
+								<div class="row items-center justify-between q-my-sm">
+									<q-icon class="meal-category-icons handle" :name="element.icon_path ? 'img:' + element.icon_path : ''">
 										<q-tooltip>
 											{{ element.category_name || 'Sin categoría' }}
 										</q-tooltip>
 									</q-icon>
 									<span class="col-8 q-pl-sm">{{ element.name ?? element.node.name }}</span>
-									<q-avatar :style="`cursor:pointer; width:0.5em; height:0.5em; background-color:${element.meal_type_color}; border: 1px solid #d4d4d4;`">
+									<q-avatar  :style="`cursor:pointer; width:0.5em; height:0.5em; background-color:${element.meal_type_color}; border: 1px solid #d4d4d4;`">
 										<q-tooltip>
 											{{ element.meal_type_name || 'Sin tipo' }}
 										</q-tooltip>
-										<q-menu>
+										<q-menu v-show="viewMenuMealTypes">
 											<q-list style="min-width: 100px">
 												<q-item clickable @click="updateMealType( element, dayOfWeek, mealHourIndex, mealType )" v-close-popup v-for="mealType in mealTypes" :key="`div-mealTypeId-${mealType.id}`" class="items-center">
 													<q-item-section avatar style="min-width: initial">
@@ -82,7 +83,7 @@
 											</q-list>
 										</q-menu>
 									</q-avatar>
-									<q-icon class="meal-remove-icons" name="clear" @click="removeMealPlanningDB(element, mealHourIndex)" @touchend.stop.prevent="removeMealPlanningDB(element, mealHourIndex)">
+									<q-icon class="meal-remove-icons" name="clear" @click="removeMealPlanningDB(element, mealHourIndex)">
 										<q-tooltip>
 											Eliminar
 										</q-tooltip>
@@ -116,6 +117,7 @@ export default {
 		let categories = ref([]);
 		let showResume = ref(false);
 		let currentItem = {};
+		let viewMenuMealTypes = ref(false)
 		let weekDiff = ref(0);
 		const $q = useQuasar();
 
@@ -291,6 +293,7 @@ export default {
 		};
 
 		const updateMealType = async ( currentItem, dayOfWeek, hourIndex, mealType ) => {
+			console.log('Entra en updateMealType');
 			currentItem.meal_type_id    = mealType.id;
 			currentItem.meal_type_color = mealType.color;
 			let index = planning.value[dayOfWeek]["hours"][hourIndex]["meals"].indexOf( currentItem );
@@ -342,7 +345,8 @@ export default {
 			weekDiff,
 			getPlanningDB,
 			updateMealType,
-			saluda
+			saluda,
+			viewMenuMealTypes,
 		};
 	},
 };
