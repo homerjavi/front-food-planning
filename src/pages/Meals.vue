@@ -23,7 +23,13 @@
 		</div>
 		<div>
 			<q-dialog v-model="prompt">
-				<q-card style="min-width: 350px">
+			<new-meal-prompt 
+				:edited_item='editedItem' 
+				:categories='categories' 
+				@updatedItem="onUpdatedItem"
+				@addedItem="onAddedItem"
+			/>
+				<!-- <q-card style="min-width: 350px">
 					<q-card-section>
 						<div class="text-h6">Nuevo plato</div>
 					</q-card-section>
@@ -55,7 +61,7 @@
 						<q-btn flat label="Cancelar" v-close-popup />
 						<q-btn flat label="Guardar" @click="save" />
 					</q-card-actions>
-				</q-card>
+				</q-card> -->
 			</q-dialog>
 		</div>
 	</q-page>
@@ -76,7 +82,8 @@
 
 <script>
 import { api } from "boot/axios";
-import { ref, nextTick, onMounted } from "vue";
+import { ref, nextTick, inject, onMounted } from "vue";
+import NewMealPrompt from "components/NewMealPrompt.vue";
 
 const columns = [
 	{
@@ -111,7 +118,12 @@ const columns = [
 export default {
 	name: "MealsPage",
 
+	components: {
+		NewMealPrompt,
+	},
+
 	setup() {
+		const emitter = inject("emitter");
 		let editedIndex = -1;
 		let meals = ref([]);
 		let categories = ref([]);
@@ -157,6 +169,11 @@ export default {
 			getCategories();
 		});
 
+		/* const onUpdateEditedItem = ( editedItem ) => {
+			editedItem.value = { ...editedItem };
+			save();
+		}; */
+
 		const getMeals = () => {
 			loadingState.value = true;
 			api.get(process.env.API + "meals").then((response) => {
@@ -181,7 +198,20 @@ export default {
 			prompt.value = true;
 		};
 
-		const save = async () => {
+		const onUpdatedItem = ( item ) => 
+		{
+			let index = meals.value.findIndex( meal => meal.id == item.id )
+			meals.value[index] = {...item};
+			close();
+		}
+
+		const onAddedItem = ( item ) => 
+		{
+			meals.value.push( item );
+			close();
+		}
+
+		/* const save = () => {
 			if (isNewItem()) {
 				newItemDB();
 			} else {
@@ -203,6 +233,7 @@ export default {
 		};
 
 		const newItemDB = async () => {
+			debugger;
 			await api
 				.post(process.env.API + "meals", editedItem.value)
 				.then((response) => {
@@ -213,7 +244,7 @@ export default {
 				});
 
 			close();
-		};
+		}; */
 
 		const requestConfirmation = (item) => {
 			editedItem.value = { ...item };
@@ -256,11 +287,13 @@ export default {
 			prompt,
 			editedItem,
 			editItem,
-			save,
+			// save,
 			close,
 			dialogConfirm,
 			deleteItemDB,
 			requestConfirmation,
+			onAddedItem,
+			onUpdatedItem,
 		};
 	},
 };

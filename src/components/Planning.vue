@@ -1,35 +1,50 @@
 <template>
 	<div q-pa-md>
 		<h3 @click="saluda" class="text-center q-mt-none q-mb-md">Planning</h3>
-		<div class="row justify-between">
-			<q-toggle class="col" v-model="showResume" label="Ver resumen" />
+		<h3 @click="calcNumAssignedMealsForType" class="text-center q-mt-none q-mb-md">Test</h3>
+		<div class="row justify-between q-mt-sm">
+			<q-toggle class="col" v-model="showResume" label="Ver resumen" @click="calcNumAssignedMealsForType"/>
 			<q-btn-group push class="col" style="max-width: 400px;">
 				<q-btn class="col q-pa-none" push icon="west" @click="getPlanningDB(-1)"/>
 				<q-btn class="col q-pa-none" push label="Hoy" icon="today" @click="getPlanningDB()" />
 				<q-btn class="col q-pa-none" push icon="east" @click="getPlanningDB(1)"/>
 			</q-btn-group>
 		</div>
-		<div>
+		<div v-if="showResume" class="q-my-sm">
 			<q-expansion-item 
 				id="resumeMeals"
 				v-model="showResume"
 				dense
-				dense-toggle>
-				<div>
-					<div></div>
-				</div>
-				<div v-for="category in categories" :key="category.id">
-					<div class="">
-						<q-icon class="meal-category-icons q-mr-sm" :name="category.icon.path ? 'img:' + category.icon.path : ''" />
-						<span :class="category.optimum_number != category.assigned ? 'text-red-6' : 'text-blue-6'">
-							{{ category.name }}: {{ category.assigned ?? 0 }} / {{ category.optimum_number }}
-						</span>
+				dense-toggle
+			>
+				<div class="row justify-evenly">
+					<div v-for="mealType in mealTypes.filter( mealtype => !mealtype.general )" :key="mealType.id" class="col-12 col-sm-5 planning-card">
+						<q-card>
+							<q-card-section class="row">
+								<q-avatar :style="`width:0.7em; height:0.7em; background-color:${mealType.color}; border: 1px solid #d4d4d4;`"></q-avatar>
+								<div class="text-h6 q-ml-sm">{{ mealType.name }}</div>
+							</q-card-section>
+
+							<q-card-section>
+								<div v-for="category in categories" :key="category.id">
+									<div class="">
+										<q-icon class="meal-category-icons q-mr-sm" :name="category.icon.path ? 'img:' + category.icon.path : ''" />
+										<span :class="category.optimum_number != category.assigned ? 'text-red-6' : 'text-blue-6'">
+											{{ category.name }}: {{ mealTypesAssigned[ mealType.id ][ category.id ] ?? 0 }} / {{ category.optimum_number }}
+										</span>
+									</div>
+								</div>
+							</q-card-section>
+
+							<q-separator dark />
+						</q-card>
 					</div>
 				</div>
 			</q-expansion-item>
 		</div>
+		
 
-		<div class="row justify-evenly">
+		<div class="row justify-evenly q-mt-md">
 			<div class="col-12 col-sm-5 col-lg-3 col-xl-auto planning-card q-pt-md q-px-md" v-for="(day, dayOfWeek) in planning" :key="`day-${dayOfWeek}`">
 				<div class="row items-baseline justify-between">
 					<span class="col text-black text-left text-h4">{{ day.name }}</span>
@@ -120,6 +135,8 @@ export default {
 		let viewMenuMealTypes = ref(false)
 		let weekDiff = ref(0);
 		const $q = useQuasar();
+		let mealTypesAssigned = ref({});
+
 
 		onBeforeMount(() => {
 			getPlanningDB();
@@ -137,12 +154,12 @@ export default {
 				mealTypes.value = response.data.mealTypes;
 				mealHours.value = response.data.mealHours;
 				categories.value = response.data.categories;
-				getNumAssignedCategory();
+				// getNumAssignedCategory();
 			});
 			$q.loading.hide();
 		};
 
-		const getNumAssignedCategory = () => {
+		/* const getNumAssignedCategory = () => {
 			for (const day in planning.value) {
 				planning.value[day]["hours"].forEach((hour) => {
 					hour["meals"].forEach((meal) => {
@@ -150,7 +167,7 @@ export default {
 					});
 				});
 			}
-		};
+		}; */
 
 		const addOrSubtractToCategory = (meal, add = true) => {
 			let index = categories.value.findIndex((category) => category.id == meal.category_id);
@@ -159,8 +176,9 @@ export default {
 				return;
 			}
 
-			categories.value[index].assigned =
-				categories.value[index].assigned != null ? (add ? ++categories.value[index].assigned : --categories.value[index].assigned) : 1;
+			categories.value[index].assigned = categories.value[index].assigned != null 
+				? (add ? ++categories.value[index].assigned : --categories.value[index].assigned) 
+				: 1;
 		};
 
 		const changeDragging = (e) => {
@@ -195,7 +213,10 @@ export default {
 				})
 				.catch((error) => {
 					console.log(error);
-				});
+				})
+				.finally( () => {
+					calcNumAssignedMealsForType();
+				} ); ;
 			$q.loading.hide();
 		};
 
@@ -242,7 +263,10 @@ export default {
 				})
 				.catch((error) => {
 					console.error(error);
-				});
+				})
+				.finally( () => {
+					calcNumAssignedMealsForType();
+				} ); ;
 
 			$q.loading.hide();
 		};
@@ -257,7 +281,10 @@ export default {
 				})
 				.catch((error) => {
 					console.log(error);
-				});
+				})
+				.finally( () => {
+					calcNumAssignedMealsForType();
+				} ); ;
 			$q.loading.hide();
 		};
 
@@ -289,7 +316,10 @@ export default {
 				})
 				.catch((error) => {
 					console.error(error);
-				});
+				})
+				.finally( () => {
+					calcNumAssignedMealsForType();
+				} ); ;
 		};
 
 		const updateMealType = async ( currentItem, dayOfWeek, hourIndex, mealType ) => {
@@ -305,7 +335,10 @@ export default {
 				})
 				.catch((error) => {
 					console.error(error);
-				}); 
+				})
+				.finally( () => {
+					calcNumAssignedMealsForType();
+				} ); 
 		};
 
 		const saluda = () => {
@@ -318,18 +351,71 @@ export default {
 			console.log('----');
 
 			Object.values(planning.value).forEach( day => {
-				console.log(day);
 				day.hours.forEach( hour => {
 					hour.meals.forEach( meal => {
 						meals.push( meal );
 					} )
 				} );
-
 			} )
 
 			console.log('----');
 			console.log(meals);
-		}
+		};
+
+		const calcNumAssignedMealsForType = () => {
+			if ( !showResume.value ) {
+				return;
+			}
+			const mealsInPlanning = getFlatMealsAssignedInPlanning();
+			
+			let categoriesObject = {};
+			categories.value.forEach( category => {
+				categoriesObject[ category.id ] = 0;
+			} );
+
+			mealTypes.value.forEach( mealType => {
+				if (mealType.general) return;
+				mealTypesAssigned.value[mealType.id] = {...categoriesObject};
+			} );
+
+
+			mealsInPlanning.forEach( mealInPlanning => {
+				if ( mealTypesAssigned.value.hasOwnProperty( mealInPlanning.meal_type_id ) ) {
+					mealTypesAssigned.value[ mealInPlanning.meal_type_id ][ mealInPlanning.category_id ]++;
+				} else{
+					Object.keys( mealTypesAssigned.value ).forEach( key => {
+						mealTypesAssigned.value[ key ][ mealInPlanning.category_id ] = mealTypesAssigned.value[ key ][ mealInPlanning.category_id ] + 1;
+					} );
+				}
+			});
+
+/* 			mealTypes.value.forEach( mealType => {
+				if (mealType.general) return;
+				mealTypesAssigned[mealType.id] = [];
+				categories.value.forEach( category => {
+					let count = mealsInPlanning.filter( meal => { 
+						return meal.category_id == category.id 
+							&& meal.meal_type_id == mealType.id 
+							// ||mealTypesGenerals.includes(meal.meal_type_id)
+					} ).lenght ?? 0;
+					mealTypesAssigned[ mealType.id ][ category.id ] = count;
+				} );	
+			} );
+			console.log( 'mealTypesAssigned', mealTypesAssigned ); */
+		};
+
+		const getFlatMealsAssignedInPlanning = () => {
+			let meals = [];
+			Object.values(planning.value).forEach( day => {
+				day.hours.forEach( hour => {
+					hour.meals.forEach( meal => {
+						meals.push( meal );
+					} )
+				} );
+			} )
+
+			return meals;
+		};
 
 		return {
 			planning,
@@ -347,6 +433,8 @@ export default {
 			updateMealType,
 			saluda,
 			viewMenuMealTypes,
+			calcNumAssignedMealsForType,
+			mealTypesAssigned,
 		};
 	},
 };
