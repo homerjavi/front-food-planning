@@ -263,6 +263,7 @@ export default {
 		};
 
 		const customOrder = ( data = meals.value, sortBy = lastOrder.sortBy, descending = lastOrder.descending) => {
+			debugger
 			lastOrder = {
 				sortBy,
 				descending
