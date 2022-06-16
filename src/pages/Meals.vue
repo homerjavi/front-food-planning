@@ -2,7 +2,19 @@
 	<q-page padding>
 		<div id="app">
 			<div class="q-pa-md">
-				<q-table title="Platos" :rows="meals" :columns="columns" row-key="name" :filter="filter" :loading="loadingState" :rows-per-page-options="[0]">
+				<q-table 
+					id="mealsTable"
+					ref="mealsTable"
+					title="Platos"
+					:rows="meals"
+					:columns="columns"
+					row-key="id"
+					:filter="filter"
+					:loading="loadingState"
+					:rows-per-page-options="[0]"
+					no-data-label="Sin datos"
+					:sort-method="customOrder"
+					binary-state-sort>
 					<template v-slot:top>
 						<q-btn color="primary" :disable="loadingState" label="Añadir plato" @click="editItem" />
 						<q-space />
@@ -55,13 +67,14 @@ import NewMealPrompt from "components/NewMealPrompt.vue";
 const columns = [
 	{
 		name: "name",
+		id: "id",
 		label: "Platos",
 		align: "left",
 		field: "name",
 		sortable: true,
 	},
 	{
-		name: "category_id",
+		name: "category",
 		align: "center",
 		label: "Categoría",
 		field: (row) => row.category.name,
@@ -98,6 +111,11 @@ export default {
 		let filter = ref("");
 		let prompt = ref(false);
 		let dialogConfirm = ref(false);
+		let mealsTable = ref(null);
+		let lastOrder = {
+			sortBy: 'name',
+			descending: false
+		};
 
 		let editedItem = ref({
 			id: "",
@@ -134,6 +152,7 @@ export default {
 		onMounted(() => {
 			getMeals();
 			getCategories();
+			console.log( mealsTable.value );
 		});
 
 		/* const onUpdateEditedItem = ( editedItem ) => {
@@ -145,22 +164,18 @@ export default {
 			loadingState.value = true;
 			api.get(process.env.API + "meals").then((response) => {
 				meals.value = response.data;
-			});
-
-			loadingState.value = false;
+			}).finally(() => loadingState.value = false);
 		};
 
 		const getCategories = () => {
 			loadingState.value = true;
 			api.get(process.env.API + "categories").then((response) => {
 				categories.value = response.data.categories;
-			});
-
-			loadingState.value = false;
+			}).finally(() => loadingState.value = false);
 		};
 
 		const editItem = (item = null, index = null) => {
-			editedItem.value = item ? { ...item } : { defaultItem };
+			editedItem.value = item ? { ...item } : { ...defaultItem };
 			editedIndex = index ?? -1;
 			prompt.value = true;
 		};
@@ -175,6 +190,8 @@ export default {
 		const onAddedItem = ( item ) => 
 		{
 			meals.value.push( item );
+			// meals.value = items;
+			customOrder();
 			close();
 		}
 
@@ -245,6 +262,29 @@ export default {
 			});
 		};
 
+		const customOrder = ( data = meals.value, sortBy = lastOrder.sortBy, descending = lastOrder.descending) => {
+			lastOrder = {
+				sortBy,
+				descending
+			};
+			
+			let orderAscOrDesc = descending ? 'desc' : 'asc';
+			
+			if(sortBy == 'category') {
+				// sortBy = "\"category['name']\", \"name\"";
+				sortBy         = ["category['name']", 'name'];
+				orderAscOrDesc = [orderAscOrDesc, 'asc'];
+				// orderAscOrDesc = "\"" + orderAscOrDesc + "\", \"asc\"";
+			} else{
+				sortBy         = [ sortBy ];
+				orderAscOrDesc = [ orderAscOrDesc ];
+			}
+
+			data = _.orderBy(data, sortBy, orderAscOrDesc);
+			
+			return data; 
+		};
+
 		return {
 			meals,
 			categories,
@@ -261,6 +301,8 @@ export default {
 			requestConfirmation,
 			onAddedItem,
 			onUpdatedItem,
+			mealsTable,
+			customOrder
 		};
 	},
 };
