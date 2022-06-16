@@ -263,7 +263,6 @@ export default {
 		};
 
 		const customOrder = ( data = meals.value, sortBy = lastOrder.sortBy, descending = lastOrder.descending) => {
-			console.log( "CustomOrder" );
 			lastOrder = {
 				sortBy,
 				descending
@@ -281,7 +280,6 @@ export default {
 				orderAscOrDesc = [ orderAscOrDesc ];
 			}
 
-			console.log( data, sortBy, orderAscOrDesc );
 			data = _.orderBy(data, sortBy, orderAscOrDesc);
 			
 			return data; 
