@@ -29,7 +29,7 @@
 								<div v-for="category in categories" :key="category.id">
 									<div class="">
 										<q-icon class="meal-category-icons q-mr-sm" :name="category.icon.path ? 'img:' + category.icon.path : ''" />
-										<span :class="category.optimum_number != category.assigned ? 'text-red-6' : 'text-blue-6'">
+										<span :class="category.optimum_number < mealTypesAssigned[ mealType.id ][ category.id ] ? 'text-red-6' : 'text-blue-6'">
 											{{ category.name }}: {{ mealTypesAssigned[ mealType.id ][ category.id ] ?? 0 }} / {{ category.optimum_number }}
 										</span>
 									</div>
