@@ -149,14 +149,18 @@ export default {
 			
 			$q.loading.show();
 			weekDiff.value = numWeekToSum ? weekDiff.value + numWeekToSum : 0;
-			await api.post(process.env.API + "planning", {'weekDiff': weekDiff.value}).then((response) => {
-				planning.value = response.data.planning;
-				mealTypes.value = response.data.mealTypes;
-				mealHours.value = response.data.mealHours;
-				categories.value = response.data.categories;
-				// getNumAssignedCategory();
-			});
-			$q.loading.hide();
+			await api.post(process.env.API + "planning", {'weekDiff': weekDiff.value})
+				.then((response) => {
+					planning.value = response.data.planning;
+					mealTypes.value = response.data.mealTypes;
+					mealHours.value = response.data.mealHours;
+					categories.value = response.data.categories;
+					// getNumAssignedCategory();
+				}).catch( () => {
+					
+				} ).finally( () => {
+					$q.loading.hide();
+				} );
 		};
 
 		/* const getNumAssignedCategory = () => {

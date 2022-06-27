@@ -11,13 +11,13 @@
 					@click="toggleLeftDrawer"
 				/>
 
-				<q-toolbar-title> Comidas </q-toolbar-title>
+				<q-toolbar-title>Comidas</q-toolbar-title>
 			</q-toolbar>
 		</q-header>
 
 		<q-drawer
 			v-model="leftDrawerOpen"
-			show-if-above
+			
 			bordered
 			class="bg-grey-1"
 		>
@@ -84,9 +84,15 @@ const linksList = [
 		icon: "menu_book",
 		link: "",
 	},
+	{
+		title: "Test",
+		caption: "",
+		icon: "menu_book",
+		link: "test",
+	},
 ];
 
-import { ref, inject, onMounted } from "vue";
+import { ref, inject, onMounted, watch, onBeforeMount } from "vue";
 
 export default {
 	name: "MainLayout",
@@ -100,6 +106,13 @@ export default {
 		const leftDrawerTreeViewOpen = ref(false);
 		const emitter                = inject("emitter");
 
+		watch(leftDrawerOpen, async (newQuestion, oldQuestion) => {
+  console.log( newQuestion, oldQuestion );
+})
+
+		onBeforeMount(() => {
+			leftDrawerOpen.value = false;
+		});
 		onMounted(() => {
 			emitter.on(
 				"updateLeftDrawerTreeViewOpen",
@@ -113,10 +126,11 @@ export default {
 		const toggleLeftDrawer = () => {
 			leftDrawerTreeViewOpen.value = false;
 			emitter.emit("closeTreeViewMealsDrawer", "OK");
+			console.log( "Antes", leftDrawerOpen.value );
 			setTimeout(() => {
 				leftDrawerOpen.value = !leftDrawerOpen.value;	
+				console.log( "Ahora", leftDrawerOpen.value );
 			}, 0);
-			
 		};
 
 		return {
