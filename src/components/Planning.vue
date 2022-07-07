@@ -437,7 +437,6 @@ export default {
 			currentItem.meal_hour_id = hourId;
 			currentItem.date = planning.value[dayOfWeek].date;
 			currentItem.hour_index = hourIndex;
-			debugger
 			currentItem.order = planning.value[dayOfWeek]["hours"][hourIndex]["meals"].length + 1;
 		};
 

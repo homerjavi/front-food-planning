@@ -5,7 +5,21 @@
 				<div class="text-h6">{{ editedOrNewMealText }}</div>
 			</q-card-section>
 			<q-card-section class="q-pt-none">
-				<q-input dense v-model="editedItem.name" label="Nombre" autofocus />
+				<div class="row justify-between">
+					<q-card-section class="col-12 col-sm-10 q-pa-none">
+						<q-input dense v-model="editedItem.name" label="Nombre" autofocus />
+					</q-card-section>
+					<q-card-section class="col-12 col-sm-2 q-pa-none text-right">
+						<q-btn
+							size="16px"
+							flat
+							:color="iconFavoriteColor"
+							icon="favorite"
+							class="q-pa-none"
+							@click="toggleFavorite"
+						/>
+					</q-card-section>
+				</div>
 			</q-card-section>
 			<q-card-section class="q-pt-none">
 				<q-select v-model="editedItem.category" :options="categories" label="Categoría" option-label="name" option-value="id">
@@ -79,10 +93,14 @@ export default {
 			minutes: "",
 			kalories: "",
 			recipe: "",
+			favorite: 0,
 		});
+	let iconFavoriteColor = ref('');
+	let loadingState = ref(true);
 
     onMounted(() => {
 		editedItem.value = props.edited_item;
+		iconFavoriteColor.value = editedItem.value.favorite ? 'red' : 'gray';
 	});
 
     /* const save = () => {
@@ -104,6 +122,7 @@ export default {
 	};
 
 	const updateItemDB = async () => {
+		loadingState.value = true;
 		await api
 			.patch(process.env.API + "meals/" + editedItem.value.id, editedItem.value)
 			.then((response) => {
@@ -112,12 +131,14 @@ export default {
 			})
 			.catch((error) => {
 				console.error(error);
-			});
+			})
+			.finally(() => loadingState.value = false );
 
 		// close();
 	};
 
 	const newItemDB = async () => {
+		loadingState.value = true;
 		await api
 			.post(process.env.API + "meals", editedItem.value)
 			.then((response) => {
@@ -126,7 +147,8 @@ export default {
 			})
 			.catch((error) => {
 				console.error(error);
-			});
+			})
+			.finally(() => loadingState.value = false );
 
 		// close();
 	};
@@ -141,8 +163,13 @@ export default {
 		});
 	}; */
 
+	const toggleFavorite = () => {
+		editedItem.value.favorite = !editedItem.value.favorite
+		iconFavoriteColor.value = editedItem.value.favorite ? 'red' : 'gray';
+	};
+
     return {
-      save, editedItem, editedOrNewMealText
+      save, editedItem, editedOrNewMealText, toggleFavorite, iconFavoriteColor
     }
   },
 }

@@ -24,6 +24,15 @@
 							</template>
 						</q-input>
 					</template>
+					<template v-slot:body-cell-favorite="props">
+						<q-td :props="props">
+							<q-icon 
+								size="16px"
+								:color="props.row.favorite ? 'red' : 'gray'"
+								name="favorite"
+							/>
+						</q-td>
+					</template>
 					<template v-slot:body-cell-action="props">
 						<q-td key="action" :props="props">
 							<q-icon name="edit" class="actionIcons" @click="editItem(props.row, props.rowIndex)" />
@@ -78,6 +87,13 @@ const columns = [
 		align: "center",
 		label: "Categoría",
 		field: (row) => row.category.name,
+		sortable: true,
+	},
+	{
+		name: "favorite",
+		align: "center",
+		label: "Favorite",
+		field: "favorite",
 		sortable: true,
 	},
 	{
@@ -175,6 +191,7 @@ export default {
 		};
 
 		const editItem = (item = null, index = null) => {
+			console.log({item, index});
 			editedItem.value = item ? { ...item } : { ...defaultItem };
 			editedIndex = index ?? -1;
 			prompt.value = true;
@@ -236,6 +253,7 @@ export default {
 		};
 
 		const deleteItemDB = async () => {
+			loadingState.value = true;
 			await api
 				.delete(process.env.API + "meals/" + editedItem.value.id)
 				.then((response) => {
@@ -243,7 +261,9 @@ export default {
 				})
 				.catch((error) => {
 					console.error(error);
-				});
+				})
+				.finally(() => loadingState.value = false );
+
 
 			close();
 		};
