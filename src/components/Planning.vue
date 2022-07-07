@@ -1,5 +1,18 @@
 <template>
 	<div q-pa-md>
+		<q-dialog v-model="visibleTreeViewMeals">
+			<q-card>
+				<q-card-section class="row items-center q-pb-none">
+					<div class="text-h6">Close icon</div>
+					<q-space />
+					<q-btn icon="close" flat round dense v-close-popup />
+				</q-card-section>
+
+				<q-card-section>
+					<tree-view-meals :clicable="true" @addMealToDayAndHour="onAddMealInDayAndHour"></tree-view-meals>/>
+				</q-card-section>
+			</q-card>
+		</q-dialog>
 		<h3 @click="saluda" class="text-center q-mt-none q-mb-md">Planning</h3>
 		<h3 @click="calcNumAssignedMealsForType" class="text-center q-mt-none q-mb-md">Test</h3>
 		<div class="row justify-between q-mt-sm">
@@ -55,7 +68,7 @@
 						class="text-h6 text-left meal-hours-tittle"
 						style="font: size 1.35rem"
 						:style="mealHourIndex > 0 ? 'margin-top: -20px;' : 'margin-top: 10px;'"
-						@click="seeAllPlanningInConsole('mealHour')"
+						@click="addMealInDayAndHour( dayOfWeek, mealHour.id, mealHourIndex )"
 					>
 						<span>{{ mealHour.name }}</span>
 						<q-icon class="q-ml-md" name="add_circle_outline">
@@ -120,10 +133,11 @@ import { useQuasar } from "quasar";
 import { ref, onBeforeMount } from "vue";
 import { api } from "boot/axios";
 import draggable from "vuedraggable";
+import TreeViewMeals from "components/TreeViewMeals";
 
 export default {
 	name: "Planning",
-	components: { draggable },
+	components: { draggable, TreeViewMeals },
 
 	setup() {
 		let planning = ref({});
@@ -136,6 +150,10 @@ export default {
 		let weekDiff = ref(0);
 		const $q = useQuasar();
 		let mealTypesAssigned = ref({});
+		let visibleTreeViewMeals = ref(false)
+		let currentDay = ref(null)
+		let currentHour = ref(null)
+		let currentHourIndex = ref(null)
 
 
 		onBeforeMount(() => {
@@ -310,7 +328,7 @@ export default {
 		};
 
 		const deleteAllPlanning = async () => {
-			await api
+			/* await api
 				.delete(process.env.API + "delete-all-planning")
 				.then((response) => {
 					planning.value = response.data.planning;
@@ -323,7 +341,7 @@ export default {
 				})
 				.finally( () => {
 					calcNumAssignedMealsForType();
-				} ); ;
+				} ); ; */
 		};
 
 		const updateMealType = async ( currentItem, dayOfWeek, hourIndex, mealType ) => {
@@ -393,19 +411,6 @@ export default {
 				}
 			});
 
-/* 			mealTypes.value.forEach( mealType => {
-				if (mealType.general) return;
-				mealTypesAssigned[mealType.id] = [];
-				categories.value.forEach( category => {
-					let count = mealsInPlanning.filter( meal => { 
-						return meal.category_id == category.id 
-							&& meal.meal_type_id == mealType.id 
-							// ||mealTypesGenerals.includes(meal.meal_type_id)
-					} ).lenght ?? 0;
-					mealTypesAssigned[ mealType.id ][ category.id ] = count;
-				} );	
-			} );
-			console.log( 'mealTypesAssigned', mealTypesAssigned ); */
 		};
 
 		const getFlatMealsAssignedInPlanning = () => {
@@ -419,6 +424,45 @@ export default {
 			} )
 
 			return meals;
+		};
+
+		const addMealInDayAndHour = ( dayOfWeek, hourId, hourIndex ) => {
+			console.log( {dayOfWeek, hourId, hourIndex} );
+			// currentDay.value = day;
+			// currentHour.value = hour;
+			// currentHourIndex.value = hourIndex;
+			visibleTreeViewMeals.value = true;
+
+			currentItem.day_of_week = dayOfWeek;
+			currentItem.meal_hour_id = hourId;
+			currentItem.date = planning.value[dayOfWeek].date;
+			currentItem.hour_index = hourIndex;
+			debugger
+			currentItem.order = planning.value[dayOfWeek]["hours"][hourIndex]["meals"].length + 1;
+		};
+
+		const onAddMealInDayAndHour = ( selectedMealId ) => {
+			console.log( 'Llego', selectedMealId );
+
+			currentItem.meal_id = selectedMealId;
+
+			$q.loading.show();
+			api
+				.post(process.env.API + "planningStore", currentItem)
+				.then((response) => {
+					planning.value[currentItem.day_of_week]["hours"][currentItem.hour_index]["meals"] = response.data;
+					addOrSubtractToCategory(currentItem);
+				})
+				.catch((error) => {
+					console.log(error);
+				})
+				.finally( () => {
+					calcNumAssignedMealsForType();
+					$q.loading.hide();
+				} );
+
+			visibleTreeViewMeals.value = false;
+
 		};
 
 		return {
@@ -439,6 +483,10 @@ export default {
 			viewMenuMealTypes,
 			calcNumAssignedMealsForType,
 			mealTypesAssigned,
+			addMealInDayAndHour,
+			onAddMealInDayAndHour,
+			TreeViewMeals,
+			visibleTreeViewMeals
 		};
 	},
 };

@@ -1,5 +1,6 @@
 <template>
 	<div id="TreeViewMeals">
+		{{ isClicable }}
 		<h4 class="text-center q-ma-none">Platos</h4>
 		<div class="q-py-md"></div>
 		<div class="row no-wrap items-end">
@@ -47,6 +48,7 @@
 							</template>
 							<template v-else>
 								<draggable
+									v-if="!isClicable"
 									:list="[prop]"
 									:item-key="prop.node.name"
 									:group="{
@@ -66,6 +68,13 @@
 										</div>
 									</template>
 								</draggable>
+								<div 
+									v-if="isClicable"
+									@dblclick="addMealToDayAndHour(prop.node.meal_id)"
+									class="handle text-black text-left bg-transparent"
+								>
+									{{ prop.node.name }}
+								</div>
 							</template>
 						</div>
 					</template>
@@ -85,7 +94,8 @@ export default {
 	components: {
 		draggable,
 	},
-	setup() {
+	props: [ 'clicable' ],
+	setup( props, context ) {
 		const emitter = inject("emitter");
 		const expandedKeys = ref([]);
 		const isExpanded = ref(true);
@@ -96,6 +106,7 @@ export default {
 		const filterRef = ref(null);
 		const currentlyDragging = false;
 		const tree = ref(null);
+		const isClicable = ref(props.clicable);
 
 		onBeforeMount(() => {
 			getCategoriesDB();
@@ -139,38 +150,10 @@ export default {
 			collapseOpen.value = "Cerrar\ntodos";
 		}
 
-		/* const startDragging = (item) => {
-			console.log("Start dragging Tree", item);
-			//console.log( 'this.$parent.leftDrawerOpen', this.leftDrawerOpen_ );
-			//this.leftDrawerOpen_ = false;
-			//console.log( 'this.$parent.leftDrawerOpen', this.leftDrawerOpen_ );
-
-			//this.$emit('updateParent', this.$parent.leftDrawerOpen)
-			//this.$emit('update:currentItem', item);
-
-			this.$parent.currentItem = item;
-			console.log("Fin de Start dragging Tree", this.$parent.currentItem);
-			this.currentlyDragging = true;
-
-			emitter.emit( 'updateCurrentItem', item );
-		}; */
-
-		/* const endDragging = () => {
-			console.log("End dragging Tree");
-			this.currentlyDragging = false;
-		}; */
-
-		/* const addDragging = () => {
-			console.log("Add dragging Tree");
-		}; */
-
-		/* const mousedown = () => {
-			console.log("mousedown");
-		}; */
-
-		/* const mouseup = () => {
-			console.log("mouseup");
-		}; */
+		const addMealToDayAndHour = ( selectedMeal ) => {
+			console.log( selectedMeal );
+			context.emit( 'addMealToDayAndHour', selectedMeal );
+		};
 
 		return {
 			expandedKeys,
@@ -184,6 +167,8 @@ export default {
 			categories,
 			tree,
 			openOrCloseTree,
+			isClicable,
+			addMealToDayAndHour
 			// startDragging,
 			// endDragging,
 		};
