@@ -15,10 +15,25 @@
 					no-data-label="Sin datos"
 					:sort-method="customOrder"
 					binary-state-sort>
-					<template v-slot:top>
-						<q-btn color="primary" :disable="loadingState" label="Añadir plato" @click="editItem" />
-						<q-space />
-						<q-input borderless dense debounce="300" color="primary" v-model="filter">
+					<template #header-cell="props">
+						<q-th
+							class="text-primary"
+							:props="props"
+						>
+							{{ props.col.label }}
+						</q-th>
+					</template>
+					<template #top-left>
+						<div
+							class="text-bold"
+							style="font-size: 1.3em;"
+						>
+							Platos
+						</div>
+					</template>
+					<template #top-right>
+						<q-btn class="q-mr-md" color="primary" :disable="loadingState" label="Añadir categoría" @click="editItem" />
+						<q-input outlined dense debounce="300" color="primary" v-model="filter">
 							<template v-slot:append>
 								<q-icon name="search" />
 							</template>
@@ -28,8 +43,8 @@
 						<q-td :props="props">
 							<q-icon 
 								size="16px"
-								:color="props.row.favorite ? 'red' : 'gray'"
-								name="favorite"
+								:name="props.row.favorite ? 'favorite' : 'favorite_border'"
+								:color="props.row.favorite ? 'red' : 'none'"
 							/>
 						</q-td>
 					</template>
@@ -72,12 +87,15 @@
 import { api } from "boot/axios";
 import { ref, nextTick, inject, onMounted } from "vue";
 import NewMealPrompt from "components/NewMealPrompt.vue";
+import { useStore } from 'vuex'
+import { useQuasar } from "quasar";
+import { getErrorMessage } from "../utils";
 
 const columns = [
 	{
 		name: "name",
 		id: "id",
-		label: "Platos",
+		label: "Nombre",
 		align: "left",
 		field: "name",
 		sortable: true,
@@ -119,6 +137,8 @@ export default {
 	},
 
 	setup() {
+		const store = useStore();
+		const $q = useQuasar();
 		const emitter = inject("emitter");
 		let editedIndex = -1;
 		let meals = ref([]);
@@ -168,30 +188,49 @@ export default {
 		onMounted(() => {
 			getMeals();
 			getCategories();
-			console.log( mealsTable.value );
 		});
-
-		/* const onUpdateEditedItem = ( editedItem ) => {
-			editedItem.value = { ...editedItem };
-			save();
-		}; */
 
 		const getMeals = () => {
 			loadingState.value = true;
-			api.get(process.env.API + "meals").then((response) => {
-				meals.value = response.data;
-			}).finally(() => loadingState.value = false);
+			api
+				.get(process.env.API + "meals", { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
+				.then((response) => {
+					meals.value = response.data;
+				})
+				.catch ( () => {
+					$q.notify({
+						message: "Error al cargar los platos",
+						type: "negative",
+						position: "top-right",
+						html: true
+					});
+				} )
+				.finally( () => { 
+					loadingState.value = false;
+				});
 		};
 
 		const getCategories = () => {
 			loadingState.value = true;
-			api.get(process.env.API + "categories").then((response) => {
-				categories.value = response.data.categories;
-			}).finally(() => loadingState.value = false);
+			api
+				.get(process.env.API + "categories", { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
+				.then((response) => {
+					categories.value = response.data.categories;
+				})
+				.catch( () => {
+					$q.notify({
+						message: "Error al cargar las categorías",
+						type: "negative",
+						position: "top-right",
+						html: true
+					});
+				})
+				.finally( () => { 
+					loadingState.value = false;
+				});
 		};
 
 		const editItem = (item = null, index = null) => {
-			console.log({item, index});
 			editedItem.value = item ? { ...item } : { ...defaultItem };
 			editedIndex = index ?? -1;
 			prompt.value = true;
@@ -207,45 +246,9 @@ export default {
 		const onAddedItem = ( item ) => 
 		{
 			meals.value.push( item );
-			// meals.value = items;
 			customOrder();
 			close();
 		}
-
-		/* const save = () => {
-			if (isNewItem()) {
-				newItemDB();
-			} else {
-				updateItemDB();
-			}
-		};
-
-		const updateItemDB = async () => {
-			await api
-				.patch(process.env.API + "meals/" + editedItem.value.id, editedItem.value)
-				.then((response) => {
-					meals.value[editedIndex] = response.data;
-				})
-				.catch((error) => {
-					console.error(error);
-				});
-
-			close();
-		};
-
-		const newItemDB = async () => {
-			debugger;
-			await api
-				.post(process.env.API + "meals", editedItem.value)
-				.then((response) => {
-					meals.value.push(response.data);
-				})
-				.catch((error) => {
-					console.error(error);
-				});
-
-			close();
-		}; */
 
 		const requestConfirmation = (item) => {
 			editedItem.value = { ...item };
@@ -253,23 +256,33 @@ export default {
 		};
 
 		const deleteItemDB = async () => {
+			$q.loading.show();
 			loadingState.value = true;
 			await api
-				.delete(process.env.API + "meals/" + editedItem.value.id)
+				.delete(process.env.API + "meals/" + editedItem.value.id, { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 				.then((response) => {
 					meals.value = response.data;
+					$q.notify({
+						message: "Eliminado correctamente",
+						type: "positive",
+						position: "top-right",
+					});
 				})
 				.catch((error) => {
-					console.error(error);
+					$q.notify({
+						message: getErrorMessage( error ),
+						type: "negative",
+						position: "top-right",
+						html: true
+					});
 				})
-				.finally(() => loadingState.value = false );
+				.finally( () => { 
+					loadingState.value = false;
+					$q.loading.hide();
+				});
 
 
 			close();
-		};
-
-		const isNewItem = () => {
-			return !editedItem.value.id;
 		};
 
 		const close = async () => {
@@ -291,10 +304,8 @@ export default {
 			let orderAscOrDesc = descending ? 'desc' : 'asc';
 			
 			if(sortBy == 'category') {
-				// sortBy = "\"category['name']\", \"name\"";
 				sortBy         = ["category['name']", 'name'];
 				orderAscOrDesc = [orderAscOrDesc, 'asc'];
-				// orderAscOrDesc = "\"" + orderAscOrDesc + "\", \"asc\"";
 			} else{
 				sortBy         = [ sortBy ];
 				orderAscOrDesc = [ orderAscOrDesc ];
@@ -314,7 +325,6 @@ export default {
 			prompt,
 			editedItem,
 			editItem,
-			// save,
 			close,
 			dialogConfirm,
 			deleteItemDB,

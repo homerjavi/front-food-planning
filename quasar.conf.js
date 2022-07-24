@@ -26,6 +26,7 @@ module.exports = configure(function (ctx) {
       'axios',
       'pagebus',
       'lodash',
+      'filters',
     ],
 
     // https://v2.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
@@ -45,6 +46,7 @@ module.exports = configure(function (ctx) {
 
       'roboto-font', // optional, you are not bound to it
       'material-icons', // optional, you are not bound to it
+      'material-icons-outlined',
     ],
 
     // Full list of options: https://v2.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
@@ -55,7 +57,7 @@ module.exports = configure(function (ctx) {
         API_BASE_URL: 'https://back-food-planning.herokuapp.com/api/',
         //API_BASE_URL: 'http://localhost:8000/api/',
         API: ctx.dev
-          ? 'http://localhost:8000/api/'
+          ? 'http://127.0.0.1:8000/api/'
           : 'https://back-food-planning.herokuapp.com/api/'
       },
       // transpile: false,

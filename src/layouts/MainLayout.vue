@@ -1,8 +1,9 @@
 <template>
 	<q-layout view="lHh Lpr lFf">
-		<q-header elevated>
+		<q-header elevated id="header-menu">
 			<q-toolbar>
 				<q-btn
+					v-if="activeMenu"
 					flat
 					dense
 					round
@@ -12,6 +13,7 @@
 				/>
 
 				<q-toolbar-title>Comidas</q-toolbar-title>
+				<user-menu v-if="activeMenu"></user-menu>
 			</q-toolbar>
 		</q-header>
 
@@ -40,13 +42,15 @@
 
 <script>
 import EssentialLink from "components/EssentialLink.vue";
+import UserMenu from "components/UserMenu.vue";
+import { isLoggedIn } from "../utils";
 
 const linksList = [
 	{
 		title: "Planning",
 		caption: "",
 		icon: "edit_calendar",
-		link: "",
+		link: "/",
 	},
 	{
 		title: "Platos",
@@ -92,13 +96,14 @@ const linksList = [
 	},
 ];
 
-import { ref, inject, onMounted, watch, onBeforeMount } from "vue";
+import { ref, inject, onMounted, watch, onBeforeMount, computed } from "vue";
 
 export default {
 	name: "MainLayout",
 
 	components: {
 		EssentialLink,
+		UserMenu
 	},
 
 	setup() {
@@ -107,8 +112,10 @@ export default {
 		const emitter                = inject("emitter");
 
 		watch(leftDrawerOpen, async (newQuestion, oldQuestion) => {
-  console.log( newQuestion, oldQuestion );
-})
+			console.log( newQuestion, oldQuestion );
+		});
+
+		const activeMenu = computed( () => isLoggedIn() );
 
 		onBeforeMount(() => {
 			leftDrawerOpen.value = false;
@@ -137,6 +144,7 @@ export default {
 			linksList,
 			leftDrawerOpen,
 			toggleLeftDrawer,
+			activeMenu,
 		};
 	},
 };

@@ -11,6 +11,8 @@ const api = axios.create({ baseURL: 'http://localhost:8000' })
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
+  // axios.defaults.headers.common['Authorization'] = `Bearer ${store.state.auth.token}`;
+  // api.defaults.headers.common['Authorization']   = `Bearer ${store.state.auth.token}`;
 
   app.config.globalProperties.$axios = axios
   // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
@@ -19,6 +21,8 @@ export default boot(({ app }) => {
   app.config.globalProperties.$api = api
   // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
   //       so you can easily perform requests against your app's API
+
+  
 })
 
 export { api }

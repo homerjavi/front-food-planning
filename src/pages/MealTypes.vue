@@ -9,22 +9,27 @@
 					row-key="name"
 					:filter="filter"
 					:loading="loadingState"
+					:rows-per-page-options="[0]"
 				>
-					<template v-slot:top>
-						<q-btn
-							color="primary"
-							:disable="loadingState"
-							label="Añadir tipo"
-							@click="newItem"
-						/>
-						<q-space />
-						<q-input
-							borderless
-							dense
-							debounce="300"
-							color="primary"
-							v-model="filter"
+					<template #header-cell="props">
+						<q-th
+							class="text-primary"
+							:props="props"
 						>
+							{{ props.col.label }}
+						</q-th>
+					</template>
+					<template #top-left>
+						<div
+							class="text-bold"
+							style="font-size: 1.3em;"
+						>
+							Tipos
+						</div>
+					</template>
+					<template #top-right>
+						<q-btn class="q-mr-md" color="primary" :disable="loadingState" label="Añadir tipología" @click="editItem" />
+						<q-input outlined dense debounce="300" color="primary" v-model="filter">
 							<template v-slot:append>
 								<q-icon name="search" />
 							</template>
@@ -65,7 +70,7 @@
 		</div>
 		<div>
 			<q-dialog v-model="prompt" persistent>
-				<q-card style="min-width: 350px">
+				<q-card style="min-width: 350px" @keyup.enter="save">
 					<q-card-section>
 						<div class="text-h6">Nuevo tipo</div>
 					</q-card-section>
@@ -76,11 +81,6 @@
 							v-model="editedItem.name"
 							label="Nombre"
 							autofocus
-							:rules="[
-								(val) =>
-									val.length >= 1 ||
-									'Por favor, introduce un nombre',
-							]"
 						/>
 					</q-card-section>
 					<q-card-section class="q-pt-none flex justify-between items-center">
@@ -111,11 +111,6 @@
 							v-model="editedItem.order"
 							label="Orden"
 							type="number"
-							:rules="[
-								(val) =>
-									val <= newOrder() ||
-									`El orden no puede ser superior a ${newOrder()}, por lo que se establecerá en ${newOrder()}`,
-							]"
 						/>
 					</q-card-section>
 					<q-card-actions align="right" class="text-primary">
@@ -147,7 +142,9 @@
 <script>
 import { ref, onBeforeMount, nextTick } from "vue";
 import { api } from "boot/axios";
+import { useStore } from 'vuex'
 import { useQuasar } from "quasar";
+import { getErrorMessage } from "../utils";
 
 const columns = [
 	{
@@ -159,7 +156,7 @@ const columns = [
 	},
 	{
 		name: "name",
-		label: "Tipo",
+		label: "Nombre",
 		align: "left",
 		field: "name",
 		sortable: true,
@@ -190,6 +187,7 @@ const columns = [
 export default {
 	name: "MealTypes",
 	setup() {
+		const store = useStore();
 		const $q = useQuasar();
 		let editedIndex = -1;
 		let mealTypes = ref([]);
@@ -212,7 +210,7 @@ export default {
 			name: "",
 			general: false,
 			color: "#FFFFFF",
-			order: "",
+			order: ""
 		};
 		onBeforeMount(() => {
 			getMealtypes();
@@ -221,49 +219,22 @@ export default {
 		const getMealtypes = async () => {
 			loadingState.value = true;
 			await api
-				.get(process.env.API + "mealTypes")
+				.get(process.env.API + "mealTypes", { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 				.then((response) => {
 					mealTypes.value = response.data;
 				})
-				.catch((e) => {
-					if (error.response.data.errors) {
-						Object.values(error.response.data.errors).forEach(
-							(element) => {
-								$q.notify({
-									message: element,
-									type: "negative",
-									position: "top-right",
-								});
-							}
-						);
-					} else {
-						$q.notify({
-							message: error.response.data.message,
-							type: "negative",
-							position: "top-right",
-						});
-					}
-				});
+				.catch((error) => {
+					$q.notify({
+						message: getErrorMessage( error ),
+						type: "negative",
+						position: "top-right",
+						html: true
+					});
+				})
+				.finally( () => {
+					loadingState.value = false;
+				} );
 
-			loadingState.value = false;
-		};
-
-		const newOrder = () => {
-			if (mealTypes.value.length > 0) {
-				return Math.max.apply(
-					Math,
-					mealTypes.value.map(function (mt) {
-						return mt.order + 1;
-					})
-				);
-			}else{
-				return 1;
-			}
-		};
-
-		const newItem = () => {
-			prompt.value = true;
-			editedItem.value.order = newOrder();
 		};
 
 		const save = async () => {
@@ -274,7 +245,7 @@ export default {
 			$q.loading.show();
 			if (isNewItem()) {
 				await api
-					.post(process.env.API + "mealTypes", editedItem.value)
+					.post(process.env.API + "mealTypes", editedItem.value, { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 					.then((response) => {
 						if (response.status == 200) {
 							mealTypes.value = response.data;
@@ -283,32 +254,26 @@ export default {
 								type: "positive",
 								position: "top-right",
 							});
+							close();
 						}
 					})
 					.catch((error) => {
-						if (error.response.data.errors) {
-							Object.values(error.response.data.errors).forEach(
-								(element) => {
-									$q.notify({
-										message: element,
-										type: "negative",
-										position: "top-right",
-									});
-								}
-							);
-						} else {
-							$q.notify({
-								message: error.response.data.message,
-								type: "negative",
-								position: "top-right",
-							});
-						}
-					});
+						$q.notify({
+							message: getErrorMessage( error ),
+							type: "negative",
+							position: "top-right",
+							html: true
+						});
+					})
+					.finally( () => {
+						$q.loading.hide();
+					} );
 			} else {
 				await api
 					.patch(
 						process.env.API + "mealTypes/" + editedItem.value.id,
-						editedItem.value
+						editedItem.value,
+						{ headers: {"Authorization" : `Bearer ${store.state.auth.token}`} }
 					)
 					.then((response) => {
 						if (response.status == 200) {
@@ -319,35 +284,26 @@ export default {
 								type: "positive",
 								position: "top-right",
 							});
+							
+							close();
 						}
 					})
 					.catch((error) => {
-						if (error.response.data.errors) {
-							Object.values(error.response.data.errors).forEach(
-								(element) => {
-									$q.notify({
-										message: element,
-										type: "negative",
-										position: "top-right",
-									});
-								}
-							);
-						} else {
-							$q.notify({
-								message: error.response.data.message,
-								type: "negative",
-								position: "top-right",
-							});
-						}
-					});
+						$q.notify({
+							message: getErrorMessage( error ),
+							type: "negative",
+							position: "top-right",
+							html: true
+						});
+					})
+					.finally( () => {
+						$q.loading.hide();
+					} );
 			}
-
-			close();
-			$q.loading.hide();
 		};
 
 		const isNewItem = () => {
-			return editedIndex == -1;
+			return !editedItem.value.id;
 		};
 
 		const close = async () => {
@@ -360,42 +316,38 @@ export default {
 		};
 
 		const editItem = (item) => {
+			defaultItem.order = mealTypes.value.length + 1
 			prompt.value = true;
 			editedIndex = 0;
-			editedItem.value = { ...item };
+			editedItem.value = item.id ? { ...item } : { ...defaultItem };
 		};
 
 		const deleteItem = async () => {
 			$q.loading.show();
 			await api
-				.delete(`${process.env.API}mealTypes/${editedItem.value.id}`)
+				.delete(`${process.env.API}mealTypes/${editedItem.value.id}`, { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 				.then((response) => {
 					if (response.status == 200) {
 						mealTypes.value = response.data;
-					}
-				})
-				.catch((error) => {
-					if (error.response.data.errors) {
-						Object.values(error.response.data.errors).forEach(
-							(element) => {
-								$q.notify({
-									message: element,
-									type: "negative",
-									position: "top-right",
-								});
-							}
-						);
-					} else {
 						$q.notify({
-							message: error.response.data.message,
+							message: "Eliminado correctamente",
 							type: "negative",
 							position: "top-right",
 						});
+						close();
 					}
-				});
-
-			close();
-			$q.loading.hide();
+				})
+				.catch((error) => {
+					$q.notify({
+						message: getErrorMessage( error ),
+						type: "negative",
+						position: "top-right",
+						html: true
+					});
+				})
+				.finally( () => {
+					$q.loading.hide();
+				} );
 		};
 
 		const requestConfirmation = (item) => {
@@ -416,8 +368,6 @@ export default {
 			deleteItem,
 			dialogConfirm,
 			requestConfirmation,
-			newItem,
-			newOrder,
 			editedItemName,
 		};
 	},

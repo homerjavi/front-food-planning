@@ -1,23 +1,23 @@
 <template>
     <div>
-		<q-card style="min-width: 350px">
+		<q-card style="min-width: 350px" @keyup.enter="save">
 			<q-card-section>
 				<div class="text-h6">{{ editedOrNewMealText }}</div>
 			</q-card-section>
 			<q-card-section class="q-pt-none">
 				<div class="row justify-between">
-					<q-card-section class="col-12 col-sm-10 q-pa-none">
+					<q-card-section class="col-10 q-pa-none">
 						<q-input dense v-model="editedItem.name" label="Nombre" autofocus />
 					</q-card-section>
-					<q-card-section class="col-12 col-sm-2 q-pa-none text-right">
+					<q-card-section class="col-2 q-pa-none text-right">
 						<q-btn
 							size="16px"
 							flat
-							:color="iconFavoriteColor"
-							icon="favorite"
+							:icon="iconProperties.name"
+							:color="iconProperties.color"
 							class="q-pa-none"
-							@click="toggleFavorite"
-						/>
+							@click="toggleFavorite">
+						</q-btn>
 					</q-card-section>
 				</div>
 			</q-card-section>
@@ -75,10 +75,16 @@
 <script>
 import { api } from "boot/axios";
 import { ref, onMounted, computed } from "vue";
+import { useStore } from 'vuex'
+import { useQuasar } from "quasar";
+import { getErrorMessage } from "../utils";
+
 export default {
   name: 'NewMealPrompt',
   props: [ 'edited_item', 'categories' ],
   setup ( props, { emit } ) {
+	const store = useStore();
+	const $q = useQuasar();
     let editedItem = ref({
 			id: "",
 			name: "",
@@ -95,17 +101,26 @@ export default {
 			recipe: "",
 			favorite: 0,
 		});
-	let iconFavoriteColor = ref('');
+	let iconProperties = ref({
+		name: '',
+		color: '',
+	});
 	let loadingState = ref(true);
 
     onMounted(() => {
 		editedItem.value = props.edited_item;
-		iconFavoriteColor.value = editedItem.value.favorite ? 'red' : 'gray';
+		setIconProperties();
 	});
 
-    /* const save = () => {
-		emit("updateEditedItem", editedItem.value);
-    }; */
+	const setIconProperties = () => {
+		if ( editedItem.value.favorite ) {
+			iconProperties.value.name  = 'favorite';
+			iconProperties.value.color = 'red';
+		} else {
+			iconProperties.value.name  = 'favorite_border';
+			iconProperties.value.color = 'none';
+		}
+	}
 
 	const editedOrNewMealText = computed( () => editedItem.value.id ? 'Editar plato' : 'Nuevo plato' );
 
@@ -122,54 +137,88 @@ export default {
 	};
 
 	const updateItemDB = async () => {
+		$q.loading.show();
 		loadingState.value = true;
 		await api
-			.patch(process.env.API + "meals/" + editedItem.value.id, editedItem.value)
+			.patch(process.env.API + "meals/" + editedItem.value.id, 
+				{
+					name: editedItem.value.name,
+					description: editedItem.value.description,
+					category_id: editedItem.value.category.id,
+					difficulty: editedItem.value.difficulty,
+					minutes: editedItem.value.minutes,
+					kalories: editedItem.value.kalories,
+					recipe: editedItem.value.recipe,
+					favorite: editedItem.value.favorite,
+				},
+				{ headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 			.then((response) => {
-				// meals.value[editedIndex] = response.data;
 				emit("updatedItem", response.data);
+				$q.notify({
+					message: "Actualizado correctamente",
+					type: "positive",
+					position: "top-right",
+				});
 			})
 			.catch((error) => {
-				console.error(error);
+				$q.notify({
+					message: getErrorMessage( error ),
+					type: "negative",
+					position: "top-right",
+					html: true
+				});
 			})
-			.finally(() => loadingState.value = false );
-
-		// close();
+			.finally( () => { 
+				loadingState.value = false;
+				$q.loading.hide();
+			});
 	};
 
 	const newItemDB = async () => {
+		$q.loading.show();
 		loadingState.value = true;
 		await api
-			.post(process.env.API + "meals", editedItem.value)
+			.post(process.env.API + "meals", 
+				{
+					name: editedItem.value.name,
+					description: editedItem.value.description,
+					category_id: editedItem.value.category?.id,
+					difficulty: editedItem.value.difficulty,
+					minutes: editedItem.value.minutes,
+					kalories: editedItem.value.kalories,
+					recipe: editedItem.value.recipe,
+					favorite: editedItem.value.favorite,
+				},
+				{ headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 			.then((response) => {
 				emit("addedItem", response.data);
-				// meals.value.push(response.data);
+				$q.notify({
+					message: "Guardado correctamente",
+					type: "positive",
+					position: "top-right",
+				});
 			})
 			.catch((error) => {
-				console.error(error);
+				$q.notify({
+					message: getErrorMessage( error ),
+					type: "negative",
+					position: "top-right",
+					html: true
+				});
 			})
-			.finally(() => loadingState.value = false );
-
-		// close();
+			.finally(() => { 
+				loadingState.value = false; 
+				$q.loading.hide();
+			});
 	};
 
-	/* const close = async () => {
-		prompt.value = false;
-		dialogConfirm.value = false;
-
-		await nextTick(() => {
-			editedItem.value = { ...defaultItem };
-			editedIndex = -1;
-		});
-	}; */
-
 	const toggleFavorite = () => {
-		editedItem.value.favorite = !editedItem.value.favorite
-		iconFavoriteColor.value = editedItem.value.favorite ? 'red' : 'gray';
+		editedItem.value.favorite = !editedItem.value.favorite;
+		setIconProperties();
 	};
 
     return {
-      save, editedItem, editedOrNewMealText, toggleFavorite, iconFavoriteColor
+      save, editedItem, editedOrNewMealText, toggleFavorite, iconProperties
     }
   },
 }

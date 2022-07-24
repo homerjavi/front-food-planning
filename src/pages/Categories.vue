@@ -2,11 +2,34 @@
 	<q-page padding>
 		<div id="app">
 			<div class="q-pa-md">
-				<q-table title="Categorias" :rows="categories" :columns="columns" row-key="name" :filter="filter" :loading="loadingState">
-					<template v-slot:top>
-						<q-btn color="primary" :disable="loadingState" label="Añadir categoría" @click="editItem" />
-						<q-space />
-						<q-input borderless dense debounce="300" color="primary" v-model="filter">
+				<q-table 
+					title="Categorias" 
+					:rows="categories" 
+					:columns="columns" 
+					row-key="name" 
+					:filter="filter" 
+					:loading="loadingState"
+					:rows-per-page-options="[0]"
+				>
+					<template #header-cell="props">
+						<q-th
+							class="text-primary"
+							:props="props"
+						>
+							{{ props.col.label }}
+						</q-th>
+					</template>
+					<template #top-left>
+						<div
+							class="text-bold"
+							style="font-size: 1.3em;"
+						>
+							Categorías
+						</div>
+					</template>
+					<template #top-right>
+						<q-btn class="q-mr-md" color="primary" :disable="loadingState" label="Añadir categoría" @click="editItem" />
+						<q-input outlined dense debounce="300" color="primary" v-model="filter">
 							<template v-slot:append>
 								<q-icon name="search" />
 							</template>
@@ -28,7 +51,7 @@
 		</div>
 		<div>
 			<q-dialog v-model="prompt">
-				<q-card style="min-width: 350px">
+				<q-card style="min-width: 350px" @keyup.enter="save">
 					<q-card-section>
 						<div class="text-h6">Nueva categoría</div>
 					</q-card-section>
@@ -90,11 +113,14 @@
 <script>
 import { api } from "boot/axios";
 import { ref, nextTick, onMounted } from "vue";
+import { useStore } from 'vuex'
+import { useQuasar } from "quasar";
+import { getErrorMessage } from "../utils";
 
 const columns = [
 	{
 		name: "name",
-		label: "Categoría",
+		label: "Nombre",
 		align: "left",
 		field: "name",
 		sortable: true,
@@ -125,6 +151,8 @@ export default {
 	name: "CategoriesPage",
 
 	setup() {
+		const store = useStore();
+		const $q = useQuasar();
 		let editedIndex = -1;
 		let categories = ref([]);
 		let icons = ref([]);
@@ -132,8 +160,6 @@ export default {
 		let filter = ref("");
 		let prompt = ref(false);
 		let dialogConfirm = ref(false);
-		let editedItemName = ref("");
-		let editedItemIcon = ref("");
 
 		let editedItem = ref({
 			id: "",
@@ -157,12 +183,22 @@ export default {
 
 		const getCategories = async () => {
 			loadingState.value = true;
-			await api.get(process.env.API + "categories").then((response) => {
-				categories.value = response.data.categories;
-				icons.value = response.data.icons;
-			});
-
-			loadingState.value = false;
+			await 
+				api.get(process.env.API + "categories", { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} } )
+					.then((response) => {
+						categories.value = response.data.categories;
+						icons.value = response.data.icons;
+					})
+					.catch( (error) => {
+						$q.notify({
+							message: 'Error al cargar las categorías',
+							type: "negative",
+							position: "top-right",
+						});
+					} )
+					.finally( () => {
+						loadingState.value = false;
+					} );
 		};
 
 		const editItem = (item = null, index = null) => {
@@ -180,29 +216,56 @@ export default {
 		};
 
 		const updateItemDB = async () => {
+			$q.loading.show();
 			await api
-				.patch(process.env.API + "categories/" + editedItem.value.id, editedItem.value)
+				.patch(process.env.API + "categories/" + editedItem.value.id, 
+					{
+						name: editedItem.value.name,
+						icon_id: editedItem.value.icon.id,
+						optimum_number: editedItem.value.optimum_number
+					}, 
+					{ headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 				.then((response) => {
 					categories.value[editedIndex] = response.data;
+					$q.notify({
+						message: 'Actualizado correctamente',
+						type: "positive",
+						position: "top-right",
+					});
+					close();
 				})
 				.catch((error) => {
-					console.error(error);
-				});
-
-			close();
+					$q.notify({
+						message: getErrorMessage( error ),
+						type: "negative",
+						position: "top-right",
+						html: true
+					});
+				})
+				.finally( () => {
+					$q.loading.hide();
+				} );
 		};
 
 		const newItemDB = async () => {
+			$q.loading.show();
 			await api
-				.post(process.env.API + "categories", editedItem.value)
+				.post(process.env.API + "categories", editedItem.value, { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 				.then((response) => {
 					categories.value.push(response.data);
+					close();
 				})
 				.catch((error) => {
-					console.error(error);
-				});
-
-			close();
+					$q.notify({
+						message: getErrorMessage( error ),
+						type: "negative",
+						position: "top-right",
+						html: true
+					});
+				})
+				.finally( () => {
+					$q.loading.hide();
+				} );
 		};
 
 		const requestConfirmation = (item) => {
@@ -211,16 +274,25 @@ export default {
 		};
 
 		const deleteItemDB = async () => {
+			$q.loading.show();
 			await api
-				.delete(process.env.API + "categories/" + editedItem.value.id)
+				.delete(process.env.API + "categories/" + editedItem.value.id, { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 				.then((response) => {
 					categories.value = response.data;
+					close();
 				})
 				.catch((error) => {
-					console.error(error);
-				});
-
-			close();
+					debugger
+					$q.notify({
+						message: getErrorMessage( error ),
+						type: "negative",
+						position: "top-right",
+						html: true
+					});
+				})
+				.finally( () => {
+					$q.loading.hide();
+				} );;
 		};
 
 		const isNewItem = () => {

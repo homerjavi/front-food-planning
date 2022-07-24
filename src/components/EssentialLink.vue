@@ -1,8 +1,7 @@
 <template>
   <q-item
-    clickable
+    @click="redirect"
     tag="a"
-    :href="link"
   >
     <q-item-section
       v-if="icon"
@@ -21,6 +20,9 @@
 </template>
 
 <script>
+import { inject } from "vue";
+import { useRouter } from 'vue-router'
+
 export default {
   name: 'EssentialLink',
   props: {
@@ -43,6 +45,17 @@ export default {
       type: String,
       default: ''
     }
-  }
+  },
+  setup( props ) {
+		const emitter = inject("emitter");
+    const router = useRouter();
+
+    const redirect = () => {
+      router.push( props.link );
+      emitter.emit( "updateLeftDrawerTreeViewOpen", false );
+    };
+
+    return { redirect };
+  },
 }
 </script>

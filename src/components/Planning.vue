@@ -9,7 +9,7 @@
 				</q-card-section>
 
 				<q-card-section>
-					<tree-view-meals :clicable="true" @addMealToDayAndHour="onAddMealInDayAndHour"></tree-view-meals>/>
+					<tree-view-meals :clicable="true" @addMealToDayAndHour="onAddMealInDayAndHour"></tree-view-meals>
 				</q-card-section>
 			</q-card>
 		</q-dialog>
@@ -61,7 +61,7 @@
 			<div class="col-12 col-sm-5 col-lg-3 col-xl-auto planning-card q-pt-md q-px-md" v-for="(day, dayOfWeek) in planning" :key="`day-${dayOfWeek}`">
 				<div class="row items-baseline justify-between">
 					<span class="col text-black text-left text-h4">{{ day.name }}</span>
-					<span class="col text-right">{{ day.date }}</span>
+					<span class="col text-right">{{ $filters.formatDate(day.date) }}</span>
 				</div>
 				<div v-for="(mealHour, mealHourIndex) in day.hours" :key="`div-mealHourId-${mealHour.id}`" class="q-ml-xs">
 					<div
@@ -124,22 +124,23 @@
 			</div>
 		</div>
 		<button @click="seeAllPlanningInConsole">See All Planning</button>
-		<button @click="deleteAllPlanning">Delete All Planning</button>
 	</div>
 </template>
 
 <script>
 import { useQuasar } from "quasar";
-import { ref, onBeforeMount } from "vue";
+import { ref, onBeforeMount, onMounted } from "vue";
 import { api } from "boot/axios";
 import draggable from "vuedraggable";
 import TreeViewMeals from "components/TreeViewMeals";
+import { useStore } from 'vuex'
 
 export default {
 	name: "Planning",
 	components: { draggable, TreeViewMeals },
 
 	setup() {
+		const store = useStore();
 		let planning = ref({});
 		let mealTypes = ref([]);
 		let mealHours = ref([]);
@@ -150,7 +151,8 @@ export default {
 		let weekDiff = ref(0);
 		const $q = useQuasar();
 		let mealTypesAssigned = ref({});
-		let visibleTreeViewMeals = ref(false)
+		let visibleTreeViewMeals = ref(false);
+		let lastMealTypeUsed = null;
 		let currentDay = ref(null)
 		let currentHour = ref(null)
 		let currentHourIndex = ref(null)
@@ -160,6 +162,10 @@ export default {
 			getPlanningDB();
 		});
 
+		onMounted(() => {
+			console.log( 'STORE AUTH', store.state.auth.username );
+		});
+
 		const getPlanningDB = async ( numWeekToSum = 0 ) => {
 			if ( !numWeekToSum && !weekDiff.value && Object.keys(planning.value).length ) {
 				return;
@@ -167,13 +173,12 @@ export default {
 			
 			$q.loading.show();
 			weekDiff.value = numWeekToSum ? weekDiff.value + numWeekToSum : 0;
-			await api.post(process.env.API + "planning", {'weekDiff': weekDiff.value})
+			await api.get(process.env.API + `planning?weekDiff=${weekDiff.value}`, { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 				.then((response) => {
-					planning.value = response.data.planning;
-					mealTypes.value = response.data.mealTypes;
-					mealHours.value = response.data.mealHours;
+					planning.value   = response.data.planning;
+					mealTypes.value  = response.data.mealTypes;
+					mealHours.value  = response.data.mealHours;
 					categories.value = response.data.categories;
-					// getNumAssignedCategory();
 				}).catch( () => {
 					
 				} ).finally( () => {
@@ -181,17 +186,7 @@ export default {
 				} );
 		};
 
-		/* const getNumAssignedCategory = () => {
-			for (const day in planning.value) {
-				planning.value[day]["hours"].forEach((hour) => {
-					hour["meals"].forEach((meal) => {
-						addOrSubtractToCategory(meal);
-					});
-				});
-			}
-		}; */
-
-		const addOrSubtractToCategory = (meal, add = true) => {
+		/* const addOrSubtractToCategory = (meal, add = true) => {
 			let index = categories.value.findIndex((category) => category.id == meal.category_id);
 
 			if (index == -1) {
@@ -201,7 +196,7 @@ export default {
 			categories.value[index].assigned = categories.value[index].assigned != null 
 				? (add ? ++categories.value[index].assigned : --categories.value[index].assigned) 
 				: 1;
-		};
+		}; */
 
 		const changeDragging = (e) => {
 			if (isEventAdded(e)) {
@@ -217,10 +212,10 @@ export default {
 		};
 
 		const addDragging = (dayOfWeek, hourId, hourIndex) => {
-			console.log("addDragging dragging Planning...", dayOfWeek, hourId, hourIndex);
 			currentItem.day_of_week = dayOfWeek;
 			currentItem.meal_hour_id = hourId;
 			currentItem.date = planning.value[dayOfWeek].date;
+			currentItem.meal_type_id = currentItem.meal_type_id ?? lastMealTypeUsed;
 
 			saveMealDB(hourIndex);
 		};
@@ -228,18 +223,18 @@ export default {
 		const saveMealDB = async (hourIndex) => {
 			$q.loading.show();
 			await api
-				.post(process.env.API + "planningStore", currentItem)
+				.post(process.env.API + "planning", currentItem, { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 				.then((response) => {
 					planning.value[currentItem.day_of_week]["hours"][hourIndex]["meals"] = response.data;
-					addOrSubtractToCategory(currentItem);
+					// addOrSubtractToCategory(currentItem);
 				})
 				.catch((error) => {
 					console.log(error);
 				})
 				.finally( () => {
 					calcNumAssignedMealsForType();
+					$q.loading.hide();
 				} ); ;
-			$q.loading.hide();
 		};
 
 		const getIndexHourItem = (item) => {
@@ -259,7 +254,7 @@ export default {
 			let indexHour = getIndexHourItem(currentItem);
 
 			await api
-				.post(process.env.API + "update-order-planning", currentItem)
+				.post(process.env.API + "updateOrderPlanning", currentItem, { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 				.then((response) => {
 					planning.value[currentItem.day_of_week]["hours"][indexHour]["meals"] = response.data;
 				})
@@ -278,10 +273,10 @@ export default {
 			}
 
 			await api
-				.delete(process.env.API + "planning/" + item.id)
+				.delete(process.env.API + "planning/" + item.id, { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 				.then((response) => {
 					planning.value[item.day_of_week]["hours"][indexHour]["meals"] = response.data;
-					addOrSubtractToCategory(item, false);
+					// addOrSubtractToCategory(item, false);
 				})
 				.catch((error) => {
 					console.error(error);
@@ -296,10 +291,10 @@ export default {
 		const previousWeek = () => {
 			$q.loading.show();
 			api
-				.post(process.env.API + "getplanning", currentItem)
+				.post(process.env.API + "getplanning", currentItem, { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 				.then((response) => {
 					planning.value[currentItem.day_of_week]["hours"][hourIndex]["meals"] = response.data;
-					addOrSubtractToCategory(currentItem);
+					// addOrSubtractToCategory(currentItem);
 				})
 				.catch((error) => {
 					console.log(error);
@@ -322,36 +317,18 @@ export default {
 		};
 
 		const seeAllPlanningInConsole = (element = '') => {
-			alert("click en " + element);
 			console.log("All Planning", planning.value);
-			// console.log("1-0", planning.value[2]["hours"][1]["meals"]);
-		};
-
-		const deleteAllPlanning = async () => {
-			/* await api
-				.delete(process.env.API + "delete-all-planning")
-				.then((response) => {
-					planning.value = response.data.planning;
-					categories.value.forEach((category) => {
-						category.assigned = 0;
-					});
-				})
-				.catch((error) => {
-					console.error(error);
-				})
-				.finally( () => {
-					calcNumAssignedMealsForType();
-				} ); ; */
 		};
 
 		const updateMealType = async ( currentItem, dayOfWeek, hourIndex, mealType ) => {
 			console.log('Entra en updateMealType');
+			lastMealTypeUsed            = mealType.id;
 			currentItem.meal_type_id    = mealType.id;
 			currentItem.meal_type_color = mealType.color;
 			let index = planning.value[dayOfWeek]["hours"][hourIndex]["meals"].indexOf( currentItem );
 
 			await api
-				.post(process.env.API + "updateMealType", currentItem)
+				.post(process.env.API + "updateMealType", currentItem, { headers: {"Authorization" : `Bearer ${store.state.auth.token}`} })
 				.then((response) => {
 					planning.value[dayOfWeek]["hours"][hourIndex]["meals"][ index ] = currentItem;
 				})
@@ -364,24 +341,7 @@ export default {
 		};
 
 		const saluda = () => {
-			let meals = [];
-			console.log('----');
-			for (const day of Object.values(planning.value)) {
-				console.log(day);	
-			}
-
-			console.log('----');
-
-			Object.values(planning.value).forEach( day => {
-				day.hours.forEach( hour => {
-					hour.meals.forEach( meal => {
-						meals.push( meal );
-					} )
-				} );
-			} )
-
-			console.log('----');
-			console.log(meals);
+			console.log( store.state.auth );
 		};
 
 		const calcNumAssignedMealsForType = () => {
@@ -428,9 +388,6 @@ export default {
 
 		const addMealInDayAndHour = ( dayOfWeek, hourId, hourIndex ) => {
 			console.log( {dayOfWeek, hourId, hourIndex} );
-			// currentDay.value = day;
-			// currentHour.value = hour;
-			// currentHourIndex.value = hourIndex;
 			visibleTreeViewMeals.value = true;
 
 			currentItem.day_of_week = dayOfWeek;
@@ -438,30 +395,13 @@ export default {
 			currentItem.date = planning.value[dayOfWeek].date;
 			currentItem.hour_index = hourIndex;
 			currentItem.order = planning.value[dayOfWeek]["hours"][hourIndex]["meals"].length + 1;
+			currentItem.meal_type_id = lastMealTypeUsed;
 		};
 
 		const onAddMealInDayAndHour = ( selectedMealId ) => {
-			console.log( 'Llego', selectedMealId );
-
 			currentItem.meal_id = selectedMealId;
-
-			$q.loading.show();
-			api
-				.post(process.env.API + "planningStore", currentItem)
-				.then((response) => {
-					planning.value[currentItem.day_of_week]["hours"][currentItem.hour_index]["meals"] = response.data;
-					addOrSubtractToCategory(currentItem);
-				})
-				.catch((error) => {
-					console.log(error);
-				})
-				.finally( () => {
-					calcNumAssignedMealsForType();
-					$q.loading.hide();
-				} );
-
+			saveMealDB( currentItem.hour_index );
 			visibleTreeViewMeals.value = false;
-
 		};
 
 		return {
@@ -471,7 +411,6 @@ export default {
 			categories,
 			showResume,
 			seeAllPlanningInConsole,
-			deleteAllPlanning,
 			addDragging,
 			changeDragging,
 			removeMealPlanningDB,

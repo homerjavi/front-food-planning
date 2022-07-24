@@ -1,6 +1,5 @@
 <template>
 	<div id="TreeViewMeals">
-		{{ isClicable }}
 		<h4 class="text-center q-ma-none">Platos</h4>
 		<div class="q-py-md"></div>
 		<div class="row no-wrap items-end">
@@ -88,6 +87,7 @@
 import { ref, inject, onBeforeMount } from "vue";
 import { api } from "boot/axios";
 import draggable from "vuedraggable";
+import { useStore } from 'vuex'
 
 export default {
 	name: "TreeViewMeals",
@@ -96,6 +96,7 @@ export default {
 	},
 	props: [ 'clicable' ],
 	setup( props, context ) {
+		const store = useStore();
 		const emitter = inject("emitter");
 		const expandedKeys = ref([]);
 		const isExpanded = ref(true);
@@ -113,7 +114,8 @@ export default {
 		});
 
 		const getCategoriesDB = async () => {
-			await api.get(process.env.API + "categories").then((response) => {
+
+			await api.get(process.env.API + "categories",{ headers: {"Authorization" : `Bearer ${store.state.auth.token}`} }).then((response) => {
 				categories.value = response.data.categories;
 			});
 		};

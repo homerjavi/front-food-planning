@@ -1,0 +1,6 @@
+{
+	"appId": "com.foodplanning.app",
+	"appName": "food-planning",
+	"webDir": "dist/spa",
+	"bundledWebRuntime": false
+}
