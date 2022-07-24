@@ -282,7 +282,6 @@ export default {
 					close();
 				})
 				.catch((error) => {
-					debugger
 					$q.notify({
 						message: getErrorMessage( error ),
 						type: "negative",
