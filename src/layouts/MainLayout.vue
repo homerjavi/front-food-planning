@@ -12,7 +12,7 @@
 					@click="toggleLeftDrawer"
 				/>
 
-				<q-toolbar-title>Comidas</q-toolbar-title>
+				<q-toolbar-title>Food planning</q-toolbar-title>
 				<user-menu v-if="activeMenu"></user-menu>
 			</q-toolbar>
 		</q-header>

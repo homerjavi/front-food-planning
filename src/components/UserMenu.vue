@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md">
+  <div class="q-py-md">
     <!-- <q-btn flat round dense icon="person"> -->
       <q-chip 
         clickable
